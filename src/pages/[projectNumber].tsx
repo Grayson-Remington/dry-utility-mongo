@@ -44,7 +44,7 @@ export default function ProjectPage({ projectNumber }: any) {
   };
   useEffect(() => {
     getTasks();
-  });
+  }, []);
 
   return (
     <main className='p-8 md:px-20 flex flex-col items-center overflow-hidden h-full'>
