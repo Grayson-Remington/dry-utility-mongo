@@ -38,6 +38,7 @@ export default function BasicAccordion({ projectNumber, tasks }: any) {
 
       if (response.ok) {
         const data = await response.json();
+
         console.log(data); // Handle success
       } else {
         console.error("Failed to sign up");
