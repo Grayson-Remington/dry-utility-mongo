@@ -3,20 +3,71 @@ import { Inter } from "next/font/google";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Navbar from "@/components/navbar";
-
+import { DataGrid, GridColDef, GridValueGetterParams } from "@mui/x-data-grid";
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
-  const [projectNumber, setProjectNumber] = useState("");
-  const [projects, setProjects] = useState<any[]>([]);
-  const addProject = async (projectNumber: any) => {
+  const [projects, setProjects] = useState<any[] | undefined>();
+
+  const columns: GridColDef[] = [
+    {
+      field: "projectNumber",
+      headerName: "Project Number",
+      width: 500,
+      renderCell: (params) => (
+        <Link
+          className='hover:bg-gray-200 border w-full text-center border-black rounded-lg m-1 p-2'
+          href={`/${params.row.projectNumber}`}
+          as={`/${params.row.projectNumber}`}>
+          {params.row.projectNumber}
+        </Link>
+      ),
+      flex: 1,
+    },
+    {
+      field: "delete",
+      headerName: "Delete",
+      width: 130,
+      renderCell: (params) => (
+        <button
+          onClick={() =>
+            deleteProject(params.row.id, params.row.projectNumber)
+          }>
+          Delete
+        </button>
+      ),
+    },
+
+    // {
+    //   field: "age",
+    //   headerName: "Age",
+    //   type: "number",
+    //   width: 90,
+    // },
+    // {
+    //   field: "fullName",
+    //   headerName: "Full name",
+    //   description: "This column has a value getter and is not sortable.",
+    //   sortable: false,
+    //   width: 160,
+    //   valueGetter: (params: GridValueGetterParams) =>
+    //     `${params.row.firstName || ""} ${params.row.lastName || ""}`,
+    // },
+  ];
+  function getRowId(row: any) {
+    return row.id;
+  }
+  const addProject = async (newItem: any) => {
     try {
       const response = await fetch("/api/addProject", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ projectNumber: projectNumber }),
+        body: JSON.stringify({
+          projectNumber: newItem.projectNumber,
+          id: newItem.id,
+        }),
       });
 
       if (response.ok) {
@@ -50,19 +101,19 @@ export default function Home() {
       console.error("An error occurred:", error);
     }
   };
-  const deleteProject = async (_id: any, projectNumber: any) => {
+  const deleteProject = async (id: any, projectNumber: any) => {
     try {
       const response = await fetch("/api/deleteProject", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ _id: _id, projectNumber: projectNumber }),
+        body: JSON.stringify({ id: id, projectNumber: projectNumber }),
       });
 
       if (response.ok) {
         const data = await response.json();
-        setProjects(projects.filter((obj) => obj._id !== _id));
+        setProjects(projects!.filter((obj) => obj.id !== id));
         console.log(data); // Handle success
       } else {
         console.error("Failed to sign up");
@@ -74,33 +125,66 @@ export default function Home() {
   useEffect(() => {
     getProjects();
   }, []);
-
+  const [projectFormData, setProjectFormData] = useState({
+    projectNumber: "",
+  });
+  const handleProjectInputChange = (e: any) => {
+    const { name, value } = e.target;
+    setProjectFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+  const handleProjectSubmit = (e: any) => {
+    e.preventDefault();
+    // You can now access the formData object and perform any actions (e.g., send data to the server)
+    console.log("Form submitted:", projectFormData);
+    const newItem = {
+      projectNumber: projectFormData.projectNumber,
+      id: Math.floor(Math.random() * 1000000000),
+    };
+    addProject(newItem);
+    // Update the state by creating a new array with the new item
+    setProjects((prevData: any) => [...prevData, newItem]);
+  };
   return (
     <main className='flex flex-col gap-2 items-center w-full h-full bg-green-500'>
       <Navbar />
-      <div className='w-full flex flex-col items-center'>
-        <div className='flex gap-2'>
-          <input
-            className='border border-black rounded-md'
-            type='text'
-            onChange={(e) => {
-              setProjectNumber(e.target.value);
-            }}
-          />
-          <button
-            className='bg-white border-black border rounded-lg p-1'
-            onClick={() => {
-              addProject(projectNumber);
-              setProjects((prevData) => [
-                ...prevData,
-                { projectNumber: projectNumber },
-              ]);
-            }}>
-            Add Project
-          </button>
-        </div>
+      <div className='w-full flex flex-col items-center p-10 max-w-4xl'>
+        <div className='w-full flex flex-col items-center bg-slate-200 rounded-lg'>
+          <form onSubmit={handleProjectSubmit}>
+            <div className='w-full flex gap-2 py-1 border-b border-black'>
+              <div className='border-r h-full pr-1 border-black font-bold'>
+                <input
+                  type='text'
+                  name='projectNumber' // Add name attribute to identify the input in handleInputChange
+                  value={projectFormData.projectNumber}
+                  onChange={handleProjectInputChange}
+                  required
+                />
+              </div>
 
-        {projects.map((project) => (
+              <button type='submit' className='border border-black rounded-lg'>
+                Add
+              </button>
+            </div>
+          </form>
+          <div style={{ height: 400, width: "100%" }}>
+            {projects && (
+              <DataGrid
+                getRowId={getRowId}
+                rows={projects}
+                columns={columns}
+                initialState={{
+                  pagination: {
+                    paginationModel: { page: 0, pageSize: 5 },
+                  },
+                }}
+                pageSizeOptions={[5, 10]}
+                checkboxSelection
+              />
+            )}
+            {/* {projects.map((project) => (
           <div className='flex w-full max-w-xl' key={project._id}>
             <Link
               className='hover:bg-gray-200 border w-2/3 text-center border-black rounded-lg m-1 p-2'
@@ -114,7 +198,9 @@ export default function Home() {
             </button>
           </div>
           // Replace 'name' with the property you want to display
-        ))}
+        ))} */}
+          </div>
+        </div>
       </div>
     </main>
   );
