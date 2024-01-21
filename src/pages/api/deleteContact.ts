@@ -5,7 +5,7 @@ export default async function handler(req: any, res: any) {
     const client = await clientPromise;
     const db = client.db("dryUdb");
     const { id } = req.body;
-    const response = await db.collection("tasks").deleteOne(
+    const response = await db.collection("contacts").deleteOne(
       { id: id } // Query to identify the document
     );
 

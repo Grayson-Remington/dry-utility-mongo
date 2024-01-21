@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Navbar from "@/components/navbar";
 import { DataGrid, GridColDef, GridValueGetterParams } from "@mui/x-data-grid";
+import { useSession, signOut } from "next-auth/react";
+import { FaRegTrashAlt } from "react-icons/fa";
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
   const [projects, setProjects] = useState<any[] | undefined>();
-
+  const { data: session, status } = useSession();
   const columns: GridColDef[] = [
     {
       field: "projectNumber",
@@ -23,19 +25,25 @@ export default function Home() {
         </Link>
       ),
       flex: 1,
+      headerAlign: "center",
     },
     {
       field: "delete",
       headerName: "Delete",
-      width: 130,
+      width: 100,
       renderCell: (params) => (
         <button
+          className='p-2'
           onClick={() =>
             deleteProject(params.row.id, params.row.projectNumber)
           }>
-          Delete
+          <FaRegTrashAlt />
         </button>
       ),
+      disableColumnMenu: true,
+      sortable: false,
+      align: "center",
+      headerAlign: "center",
     },
 
     // {
@@ -147,20 +155,22 @@ export default function Home() {
     // Update the state by creating a new array with the new item
     setProjects((prevData: any) => [...prevData, newItem]);
   };
+
   return (
-    <main className='flex flex-col gap-2 items-center w-full h-full bg-green-500'>
+    <main className='w-full h-full flex flex-col items-center bg-blue-200'>
       <Navbar />
-      <div className='w-full flex flex-col items-center p-10 max-w-4xl'>
-        <div className='w-full flex flex-col items-center bg-slate-200 rounded-lg'>
+      {status === "authenticated" && (
+        <div className='max-w-4xl bg-white rounded-lg p-1 min-w-[619.5px]'>
           <form onSubmit={handleProjectSubmit}>
             <div className='w-full flex gap-2 py-1 border-b border-black'>
-              <div className='border-r h-full pr-1 border-black font-bold'>
+              <div className=' h-full w-full pr-1 border-black font-bold'>
                 <input
                   type='text'
                   name='projectNumber' // Add name attribute to identify the input in handleInputChange
                   value={projectFormData.projectNumber}
                   onChange={handleProjectInputChange}
                   required
+                  className='border border-black rounded-md w-full'
                 />
               </div>
 
@@ -181,7 +191,6 @@ export default function Home() {
                   },
                 }}
                 pageSizeOptions={[5, 10]}
-                checkboxSelection
               />
             )}
             {/* {projects.map((project) => (
@@ -201,7 +210,7 @@ export default function Home() {
         ))} */}
           </div>
         </div>
-      </div>
+      )}
     </main>
   );
 }

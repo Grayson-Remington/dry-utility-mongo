@@ -6,9 +6,15 @@ export default async function handler(req: any, res: any) {
     const db = client.db("dryUdb");
     const { id, projectNumber } = req.body;
     const response = await db.collection("projects").deleteOne(
-      { _id: id } // Query to identify the document
+      { id: id } // Query to identify the document
     );
     const tasksResponse = await db.collection("tasks").deleteMany(
+      { projectNumber: projectNumber } // Query to identify tasks with the specified project number
+    );
+    const contactsResponse = await db.collection("contacts").deleteMany(
+      { projectNumber: projectNumber } // Query to identify tasks with the specified project number
+    );
+    const todosResponse = await db.collection("todos").deleteMany(
       { projectNumber: projectNumber } // Query to identify tasks with the specified project number
     );
     res.json(response);

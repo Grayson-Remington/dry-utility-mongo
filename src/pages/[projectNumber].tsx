@@ -1,34 +1,10 @@
-import Link from "next/link";
-import { useRouter } from "next/router";
-import BasicAccordion from "./accoridan";
 import { useEffect, useState } from "react";
 import * as React from "react";
-import { DataGrid, GridColDef, GridValueGetterParams } from "@mui/x-data-grid";
 import Navbar from "@/components/navbar";
-
-const columns: GridColDef[] = [
-  { field: "date", headerName: "Date", width: 130 },
-  { field: "text", headerName: "Information", width: 300 },
-  { field: "taskClass", headerName: "Category", width: 130 },
-  // {
-  //   field: "age",
-  //   headerName: "Age",
-  //   type: "number",
-  //   width: 90,
-  // },
-  // {
-  //   field: "fullName",
-  //   headerName: "Full name",
-  //   description: "This column has a value getter and is not sortable.",
-  //   sortable: false,
-  //   width: 160,
-  //   valueGetter: (params: GridValueGetterParams) =>
-  //     `${params.row.firstName || ""} ${params.row.lastName || ""}`,
-  // },
-];
-function getRowId(row: any) {
-  return row.id;
-}
+import TaskGrid from "@/components/taskGrid";
+import ContactsGrid from "@/components/contactsGrid";
+import { Button, ButtonGroup } from "@mui/material";
+import TodoGrid from "@/components/todoGrid";
 
 export async function getServerSideProps(context: any) {
   const { projectNumber } = context.query;
@@ -46,8 +22,9 @@ export async function getServerSideProps(context: any) {
 
 export default function ProjectPage({ projectNumber }: any) {
   const [tasks, setTasks] = useState<any[] | undefined>();
-  const router = useRouter();
-
+  const [contacts, setContacts] = useState<any[] | undefined>();
+  const [todos, setTodos] = useState<any[] | undefined>();
+  const [selectedGrid, setSelectedGrid] = useState<string>("Tasks");
   const getTasks = async () => {
     try {
       const response = await fetch("/api/getTasks", {
@@ -69,28 +46,19 @@ export default function ProjectPage({ projectNumber }: any) {
       console.error("An error occurred:", error);
     }
   };
-  useEffect(() => {
-    getTasks();
-  }, []);
-
-  const addTask = async (newItem: any) => {
+  const getContacts = async () => {
     try {
-      const response = await fetch("/api/addTask", {
+      const response = await fetch("/api/getContacts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          projectNumber: projectNumber,
-          taskClass: newItem.taskClass,
-          date: newItem.date,
-          text: newItem.text,
-          id: newItem.id,
-        }),
+        body: JSON.stringify({ projectNumber: projectNumber }),
       });
 
       if (response.ok) {
         const data = await response.json();
+        setContacts(data);
         console.log(data); // Handle success
       } else {
         console.error("Failed to sign up");
@@ -99,99 +67,96 @@ export default function ProjectPage({ projectNumber }: any) {
       console.error("An error occurred:", error);
     }
   };
-  const [taskFormData, setTaskFormData] = useState({
-    date: "",
-    text: "",
-    taskClass: "Power",
-  });
-  const handleTaskInputChange = (e: any) => {
-    const { name, value } = e.target;
-    setTaskFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
-  const handleTaskSubmit = (e: any) => {
-    e.preventDefault();
-    // You can now access the formData object and perform any actions (e.g., send data to the server)
-    console.log("Form submitted:", taskFormData);
-    const newItem = {
-      projectNumber: projectNumber,
-      taskClass: taskFormData.taskClass,
-      date: taskFormData.date,
-      text: taskFormData.text,
-      id: Math.floor(Math.random() * 1000000000),
-    };
-    addTask(newItem);
-    // Update the state by creating a new array with the new item
-    setTasks((prevData: any) => [...prevData, newItem]);
-  };
-  return (
-    <main className='w-full h-full flex flex-col items-center bg-green-500'>
-      <Navbar />
+  const getTodos = async () => {
+    try {
+      const response = await fetch("/api/getTodos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ projectNumber: projectNumber }),
+      });
 
-      {tasks && (
-        <div className='max-w-4xl bg-white rounded-lg p-1'>
-          <form onSubmit={handleTaskSubmit}>
-            <div className='w-full flex gap-2 py-1 border-b border-black'>
-              <div className='border-r h-full pr-1 border-black font-bold'>
-                <input
-                  type='date'
-                  name='date' // Add name attribute to identify the input in handleInputChange
-                  value={taskFormData.date}
-                  onChange={handleTaskInputChange}
-                  required
-                />
-              </div>
-              <input
-                type='text'
-                name='text' // Add name attribute to identify the input in handleInputChange
-                value={taskFormData.text}
-                onChange={handleTaskInputChange}
-                className='border border-black rounded-md w-full'
-                required
-              />
-              <select
-                value={taskFormData.taskClass}
-                onChange={handleTaskInputChange}
-                id='taskClass'
-                name='taskClass'>
-                <option value='Power'>Power</option>
-                <option value='Gas'>Gas</option>
-                <option value='Telco'>Telco</option>
-                <option value='Misc'>Misc</option>
-              </select>
-              <button type='submit' className='border border-black rounded-lg'>
-                Add
-              </button>
-            </div>
-          </form>
-          <div style={{ height: 400, width: "100%" }}>
-            <DataGrid
-              getRowId={getRowId}
-              rows={tasks}
-              columns={columns}
-              initialState={{
-                pagination: {
-                  paginationModel: { page: 0, pageSize: 5 },
-                },
-              }}
-              pageSizeOptions={[5, 10]}
-              checkboxSelection
-            />
-          </div>
-        </div>
+      if (response.ok) {
+        const data = await response.json();
+        setTodos(data);
+        console.log(data); // Handle success
+      } else {
+        console.error("Failed to sign up");
+      }
+    } catch (error) {
+      console.error("An error occurred:", error);
+    }
+  };
+
+  useEffect(() => {
+    getTasks();
+    getContacts();
+    getTodos();
+  }, []);
+
+  return (
+    <main className='w-full h-full flex flex-col gap-2 items-center bg-blue-200 p-4'>
+      <Navbar />
+      <h1 className='text-2xl underline'>{projectNumber}</h1>
+      <ButtonGroup
+        variant='outlined'
+        aria-label='outlined button group'
+        className='bg-white text-black'>
+        <Button
+          disableRipple
+          disableFocusRipple
+          disableTouchRipple
+          disableElevation
+          className={`${
+            selectedGrid === "Tasks"
+              ? "bg-blue-800 text-white hover:bg-blue-800"
+              : ""
+          }`}
+          onClick={() => setSelectedGrid("Tasks")}>
+          Tasks
+        </Button>
+        <Button
+          className={`${
+            selectedGrid === "Contacts"
+              ? "bg-blue-800 text-white hover:bg-blue-800"
+              : ""
+          }`}
+          onClick={() => setSelectedGrid("Contacts")}>
+          Contacts
+        </Button>
+        <Button
+          className={`${
+            selectedGrid === "Todos"
+              ? "bg-blue-800 text-white hover:bg-blue-800"
+              : ""
+          }`}
+          onClick={() => setSelectedGrid("Todos")}>
+          To Dos
+        </Button>
+      </ButtonGroup>
+
+      {selectedGrid === "Tasks" && (
+        <TaskGrid
+          tasks={tasks}
+          setTasks={setTasks}
+          projectNumber={projectNumber}
+        />
+      )}
+      {selectedGrid === "Contacts" && (
+        <ContactsGrid
+          contacts={contacts}
+          setContacts={setContacts}
+          projectNumber={projectNumber}
+        />
+      )}
+      {selectedGrid === "Todos" && (
+        <TodoGrid
+          todos={todos}
+          setTodos={setTodos}
+          projectNumber={projectNumber}
+        />
       )}
     </main>
   );
-
-  // return (
-  //   <main className='p-8 md:px-20 flex flex-col items-center overflow-hidden h-full'>
-  //
-  //     <h1 className='text-center'>{projectNumber}</h1>
-  //     <div className='pt-8 max-w-[1000px]'>
-  //       <BasicAccordion projectNumber={projectNumber} tasks={tasks} />
-  //     </div>
-  //   </main>
-  // );
 }
