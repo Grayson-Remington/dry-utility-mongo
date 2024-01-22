@@ -159,7 +159,7 @@ export default function Home() {
   return (
     <main className='w-full h-full flex flex-col items-center bg-blue-200'>
       <Navbar />
-      {status === "authenticated" && (
+      {
         <div className='max-w-4xl bg-white rounded-lg p-1 min-w-[619.5px]'>
           <form onSubmit={handleProjectSubmit}>
             <div className='w-full flex gap-2 py-1 border-b border-black'>
@@ -210,7 +210,7 @@ export default function Home() {
         ))} */}
           </div>
         </div>
-      )}
+      }
     </main>
   );
 }
