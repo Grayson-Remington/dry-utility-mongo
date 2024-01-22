@@ -104,10 +104,6 @@ export default function ProjectPage({ projectNumber }: any) {
         aria-label='outlined button group'
         className='bg-white text-black'>
         <Button
-          disableRipple
-          disableFocusRipple
-          disableTouchRipple
-          disableElevation
           className={`${
             selectedGrid === "Tasks"
               ? "bg-blue-800 text-white hover:bg-blue-800"
