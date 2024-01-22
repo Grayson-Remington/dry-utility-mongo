@@ -112,7 +112,7 @@ function Signin({ providers }: any) {
 
 export default Signin;
 
-export async function getServerSideProps(context: any) {
+export async function getStaticProps(context: any) {
   const { req } = context;
   const session = await getSession({ req });
 
