@@ -3,8 +3,7 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { useConfirm } from "material-ui-confirm";
-import { Tooltip } from "@mui/material";
-export default function TodoGrid({ todos, setTodos, projectNumber }: any) {
+export default function AllTodoGrid({ todos, setTodos, projects }: any) {
   const { data: session, status } = useSession();
   const confirm = useConfirm();
   function formatDate(inputDate: any) {
@@ -56,16 +55,11 @@ export default function TodoGrid({ todos, setTodos, projectNumber }: any) {
       renderCell: (params) => <div>{formatDate(params.row.date)}</div>,
     },
     {
-      field: "text",
-      headerName: "Information",
-      width: 300,
-      flex: 1,
-      renderCell: (params: any) => (
-        <Tooltip title={params.row.text}>
-          <span className='table-cell-trucate'>{params.row.text}</span>
-        </Tooltip>
-      ),
+      field: "projectNumber",
+      headerName: "Project Number",
+      width: 130,
     },
+    { field: "text", headerName: "Information", width: 300, flex: 1 },
     {
       field: "todoClass",
       headerName: "Category",
@@ -122,7 +116,7 @@ export default function TodoGrid({ todos, setTodos, projectNumber }: any) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          projectNumber: projectNumber,
+          projectNumber: newItem.projectNumber,
           todoClass: newItem.todoClass,
           date: newItem.date,
           text: newItem.text,
@@ -145,6 +139,7 @@ export default function TodoGrid({ todos, setTodos, projectNumber }: any) {
     date: "",
     text: "",
     todoClass: "Power",
+    projectNumber: "",
   });
 
   const handleTodoInputChange = (e: any) => {
@@ -159,7 +154,7 @@ export default function TodoGrid({ todos, setTodos, projectNumber }: any) {
     // You can now access the formData object and perform any actions (e.g., send data to the server)
     console.log("Form submitted:", todoFormData);
     const newItem = {
-      projectNumber: projectNumber,
+      projectNumber: todoFormData.projectNumber,
       todoClass: todoFormData.todoClass,
       date: todoFormData.date,
       text: todoFormData.text,
@@ -192,6 +187,18 @@ export default function TodoGrid({ todos, setTodos, projectNumber }: any) {
                 className='border border-black rounded-md w-full'
                 required
               />
+              <select
+                className={""}
+                value={todoFormData.todoClass}
+                onChange={handleTodoInputChange}
+                id='todoClass'
+                name='todoClass'>
+                {projects.map((project: any) => (
+                  <option key={project.id} value={project.projectNumber}>
+                    {project.projectNumber}
+                  </option>
+                ))}
+              </select>
               <select
                 className={`rounded-lg p-1 font-bold ${
                   todoFormData.todoClass == "Power"
@@ -231,7 +238,7 @@ export default function TodoGrid({ todos, setTodos, projectNumber }: any) {
               columns={columns}
               initialState={{
                 pagination: {
-                  paginationModel: { page: 0, pageSize: 5 },
+                  paginationModel: { page: 0, pageSize: 30 },
                 },
                 sorting: {
                   sortModel: [{ field: "date", sort: "desc" }],

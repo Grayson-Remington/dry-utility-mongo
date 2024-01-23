@@ -146,7 +146,7 @@ export default function ContactsGrid({
   return (
     <>
       {status === "authenticated" && contacts && (
-        <div className='max-w-4xl bg-white rounded-lg p-1'>
+        <div className='max-w-4xl w-full bg-white rounded-lg p-1'>
           <form onSubmit={handleContactSubmit}>
             <div className='w-full flex items-center gap-2 py-1 border-b border-black'>
               <div className='border-r h-full pr-1 border-black font-bold'>
@@ -207,7 +207,7 @@ export default function ContactsGrid({
                     onChange={handleContactInputChange}
                     id='contactClass'
                     name='contactClass'>
-                    <option className='bg-red-500 ' value='Power'>
+                    <option className='bg-red-500' value='Power'>
                       Power
                     </option>
                     <option className='bg-yellow-500' value='Gas'>

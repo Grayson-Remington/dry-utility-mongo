@@ -96,7 +96,7 @@ export default function ProjectPage({ projectNumber }: any) {
   }, []);
 
   return (
-    <main className='w-full h-full flex flex-col gap-2 items-center bg-blue-200 p-4'>
+    <main className='w-full h-full flex flex-col gap-2 items-center bg-blue-200 px-4'>
       <Navbar />
       <h1 className='text-2xl underline'>{projectNumber}</h1>
       <ButtonGroup
