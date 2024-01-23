@@ -189,10 +189,10 @@ export default function AllTodoGrid({ todos, setTodos, projects }: any) {
               />
               <select
                 className={""}
-                value={todoFormData.todoClass}
+                value={todoFormData.projectNumber}
                 onChange={handleTodoInputChange}
-                id='todoClass'
-                name='todoClass'>
+                id='projectNumber'
+                name='projectNumber'>
                 {projects.map((project: any) => (
                   <option key={project.id} value={project.projectNumber}>
                     {project.projectNumber}

@@ -160,7 +160,7 @@ export default function TaskGrid({ tasks, setTasks, projectNumber }: any) {
   return (
     <>
       {status === "authenticated" && tasks && (
-        <div className='max-w-6xl w-full bg-white rounded-lg p-1'>
+        <div className='max-w-4xl w-full bg-white rounded-lg p-1'>
           <form onSubmit={handleTaskSubmit}>
             <div className='w-full flex gap-2 py-1 border-b border-black'>
               <div className='border-r h-full pr-1 border-black font-bold'>
