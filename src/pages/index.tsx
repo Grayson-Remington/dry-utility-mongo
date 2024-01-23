@@ -69,29 +69,27 @@ export default function Home() {
   return (
     <main className='w-full px-4 h-full flex flex-col items-center bg-blue-200'>
       <Navbar />
-      <ButtonGroup
-        variant='outlined'
-        aria-label='outlined button group'
-        className='bg-white text-black'>
-        <Button
-          className={`${
+      <div className=''>
+        <button
+          className={`p-2  border border-blue-600 rounded-l-md  ${
             selectedGrid === "Projects"
               ? "bg-blue-800 text-white hover:bg-blue-800"
-              : ""
+              : "text-blue-600"
           }`}
           onClick={() => setSelectedGrid("Projects")}>
           Projects
-        </Button>
-        <Button
-          className={`${
+        </button>
+        <button
+          className={`p-2 border border-blue-600 rounded-r-md  ${
             selectedGrid === "Todos"
               ? "bg-blue-800 text-white hover:bg-blue-800"
-              : ""
+              : "text-blue-600"
           }`}
           onClick={() => setSelectedGrid("Todos")}>
           Todos
-        </Button>
-      </ButtonGroup>
+        </button>
+      </div>
+
       {status === "authenticated" && selectedGrid === "Projects" && (
         <ProjectsGrid projects={projects} setProjects={setProjects} />
       )}

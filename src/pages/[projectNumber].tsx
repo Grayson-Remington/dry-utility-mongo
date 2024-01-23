@@ -96,41 +96,39 @@ export default function ProjectPage({ projectNumber }: any) {
   }, []);
 
   return (
-    <main className='w-full h-full flex flex-col gap-2 items-center bg-blue-200 px-4'>
+    <main className='w-full h-full flex flex-col items-center bg-blue-200 px-4'>
       <Navbar />
-      <h1 className='text-2xl underline'>{projectNumber}</h1>
-      <ButtonGroup
-        variant='outlined'
-        aria-label='outlined button group'
-        className='bg-white text-black'>
-        <Button
-          className={`${
+      <h1 className='text-2xl underline py-2'>{projectNumber}</h1>
+
+      <div className=''>
+        <button
+          className={`p-2  border border-blue-600 rounded-l-md  ${
             selectedGrid === "Tasks"
               ? "bg-blue-800 text-white hover:bg-blue-800"
-              : ""
+              : "text-blue-600"
           }`}
           onClick={() => setSelectedGrid("Tasks")}>
           Tasks
-        </Button>
-        <Button
-          className={`${
+        </button>
+        <button
+          className={`p-2 border border-blue-600  ${
             selectedGrid === "Contacts"
               ? "bg-blue-800 text-white hover:bg-blue-800"
-              : ""
+              : "text-blue-600"
           }`}
           onClick={() => setSelectedGrid("Contacts")}>
           Contacts
-        </Button>
-        <Button
-          className={`${
+        </button>
+        <button
+          className={`p-2 border border-blue-600 rounded-r-md  ${
             selectedGrid === "Todos"
               ? "bg-blue-800 text-white hover:bg-blue-800"
-              : ""
+              : "text-blue-600"
           }`}
           onClick={() => setSelectedGrid("Todos")}>
-          To Dos
-        </Button>
-      </ButtonGroup>
+          Todos
+        </button>
+      </div>
 
       {selectedGrid === "Tasks" && (
         <TaskGrid
