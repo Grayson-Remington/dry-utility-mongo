@@ -19,7 +19,7 @@ export default function Home() {
         },
         body: JSON.stringify({
           name: firstName + " " + lastName,
-          email: email,
+          email: email.toLowerCase(),
           password: password,
         }),
       });

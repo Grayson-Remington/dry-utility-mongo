@@ -39,11 +39,6 @@ export default function Navbar() {
         Dry Utility Project Tracker
       </h1>
       <div className='flex gap-4 pt-4'>
-        <Link
-          href='/'
-          className=' transition-transform transform hover:scale-110 hover:bg-gray-100 rounded-lg p-1 flex items-center text-center text-firstcolor font-extrabold'>
-          Home
-        </Link>
         {status === "unauthenticated" && (
           <>
             <Link
@@ -60,6 +55,11 @@ export default function Navbar() {
         )}
         {status === "authenticated" && (
           <>
+            <Link
+              href='/'
+              className=' transition-transform transform hover:scale-110 hover:bg-gray-100 rounded-lg p-1 flex items-center text-center text-firstcolor font-extrabold'>
+              Home
+            </Link>
             <Avatar
               className=' text-sm h-8 w-8 mr-1 items-center justify-center flex'
               {...stringAvatar(`${session?.user?.name}`)}

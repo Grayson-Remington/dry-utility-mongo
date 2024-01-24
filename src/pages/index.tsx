@@ -67,38 +67,41 @@ export default function Home() {
   };
 
   return (
-    <main className='w-full px-4 h-full flex flex-col items-center bg-blue-200'>
+    <main className='w-full px-4 h-full min-h-screen flex flex-col items-center bg-blue-200'>
       <Navbar />
-      <div className=''>
-        <button
-          className={`p-2  border border-blue-600 rounded-l-md  ${
-            selectedGrid === "Projects"
-              ? "bg-blue-800 text-white hover:bg-blue-800"
-              : "text-blue-600"
-          }`}
-          onClick={() => setSelectedGrid("Projects")}>
-          Projects
-        </button>
-        <button
-          className={`p-2 border border-blue-600 rounded-r-md  ${
-            selectedGrid === "Todos"
-              ? "bg-blue-800 text-white hover:bg-blue-800"
-              : "text-blue-600"
-          }`}
-          onClick={() => setSelectedGrid("Todos")}>
-          Todos
-        </button>
-      </div>
-
-      {status === "authenticated" && selectedGrid === "Projects" && (
-        <ProjectsGrid projects={projects} setProjects={setProjects} />
-      )}
-      {status === "authenticated" && selectedGrid === "Todos" && (
-        <AllTodoGrid
-          todos={allTodos}
-          setTodos={setAllTodos}
-          projects={projects}
-        />
+      {status === "authenticated" && (
+        <>
+          <div className=''>
+            <button
+              className={`p-2  border border-blue-600 rounded-l-md  ${
+                selectedGrid === "Projects"
+                  ? "bg-blue-800 text-white hover:bg-blue-800"
+                  : "text-blue-600"
+              }`}
+              onClick={() => setSelectedGrid("Projects")}>
+              Projects
+            </button>
+            <button
+              className={`p-2 border border-blue-600 rounded-r-md  ${
+                selectedGrid === "Todos"
+                  ? "bg-blue-800 text-white hover:bg-blue-800"
+                  : "text-blue-600"
+              }`}
+              onClick={() => setSelectedGrid("Todos")}>
+              Todos
+            </button>
+          </div>
+          {selectedGrid === "Projects" && (
+            <ProjectsGrid projects={projects} setProjects={setProjects} />
+          )}
+          {selectedGrid === "Todos" && (
+            <AllTodoGrid
+              todos={allTodos}
+              setTodos={setAllTodos}
+              projects={projects}
+            />
+          )}
+        </>
       )}
     </main>
   );

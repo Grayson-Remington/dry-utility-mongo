@@ -125,7 +125,7 @@ export default function ProjectPage({ projectNumber }: any) {
   }, []);
 
   return (
-    <main className='w-full h-full flex flex-col items-center bg-blue-200 px-4'>
+    <main className='w-full h-full min-h-screen flex flex-col items-center bg-blue-200 px-4'>
       <Navbar />
       <h1 className='text-2xl underline py-2'>{projectNumber}</h1>
 
