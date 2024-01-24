@@ -4,12 +4,13 @@ export default async function handler(req: any, res: any) {
   try {
     const client = await clientPromise;
     const db = client.db("dryUdb");
-    const { projectNumber, date, text, todoClass, id } = req.body;
+    const { author, projectNumber, date, text, todoClass, id } = req.body;
 
     const response = await db.collection("todos").updateOne(
       { text: text }, // Query for finding an existing item with the same name
       {
         $setOnInsert: {
+          author: author,
           projectNumber: projectNumber,
           todoClass: todoClass,
           date: date,

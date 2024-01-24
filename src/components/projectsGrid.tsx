@@ -100,25 +100,31 @@ export default function ProjectsGrid({ projects, setProjects }: any) {
     }
   };
   const deleteProject = async (id: any, projectNumber: any) => {
-    try {
-      const response = await fetch("/api/deleteProject", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ id: id, projectNumber: projectNumber }),
-      });
+    confirm({ description: "This action is permanent!" })
+      .then(async () => {
+        try {
+          const response = await fetch("/api/deleteProject", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ id: id, projectNumber: projectNumber }),
+          });
 
-      if (response.ok) {
-        const data = await response.json();
-        setProjects(projects!.filter((obj: any) => obj.id !== id));
-        console.log(data); // Handle success
-      } else {
-        console.error("Failed to sign up");
-      }
-    } catch (error) {
-      console.error("An error occurred:", error);
-    }
+          if (response.ok) {
+            const data = await response.json();
+            setProjects(projects!.filter((obj: any) => obj.id !== id));
+            console.log(data); // Handle success
+          } else {
+            console.error("Failed to sign up");
+          }
+        } catch (error) {
+          console.error("An error occurred:", error);
+        }
+      })
+      .catch(() => {
+        /* ... */
+      });
   };
   const [projectFormData, setProjectFormData] = useState({
     projectNumber: "",

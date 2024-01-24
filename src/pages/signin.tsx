@@ -14,8 +14,6 @@ function Signin({ providers }: any) {
   const router = useRouter();
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    console.log(email);
-    console.log(password);
 
     const response = await signIn("credentials", {
       email: email,
@@ -24,7 +22,6 @@ function Signin({ providers }: any) {
     });
 
     if (response?.error) {
-      console.log("Signin error:", response.error);
       if (response.error == "User not found") {
         toast("User Not Found");
       }

@@ -3,32 +3,37 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 
 export default function Home() {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    console.log(email);
-    console.log(password);
-    // try {
-    //   const response = await fetch("/api/create-user", {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: JSON.stringify({ email, password }),
-    //   });
 
-    //   if (response.ok) {
-    //     const data = await response.json();
-    //     console.log(data); // Handle success
-    //     router.push("/api/auth/signin");
-    //   } else {
-    //     console.error("Failed to sign up");
-    //   }
-    // } catch (error) {
-    //   console.error("An error occurred:", error);
-    // }
+    try {
+      const response = await fetch("/api/create-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: firstName + " " + lastName,
+          email: email,
+          password: password,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+
+        router.push("/api/auth/signin");
+      } else {
+        console.error("Failed to sign up");
+      }
+    } catch (error) {
+      console.error("An error occurred:", error);
+    }
   };
   const isPasswordValid = (password: any) => {
     // Check if the password has at least 8 characters
@@ -71,6 +76,38 @@ export default function Home() {
           </h2>
 
           <form className='mt-10' onSubmit={handleSubmit}>
+            <label className='block text-xs font-semibold text-gray-600 uppercase'>
+              First Name
+            </label>
+            <input
+              id='firstName'
+              type='text'
+              name='firstName'
+              placeholder='First Name'
+              autoComplete='First Name'
+              onChange={(e) => setFirstName(e.target.value)}
+              className='block w-full py-3 px-1 mt-2 
+                    text-gray-800 appearance-none 
+                    border-b-2 border-gray-100
+                    focus:text-gray-500 focus:outline-none focus:border-gray-200'
+              required
+            />
+            <label className='block text-xs font-semibold text-gray-600 uppercase'>
+              Last Name
+            </label>
+            <input
+              id='lastName'
+              type='text'
+              name='lastName'
+              placeholder='Last Name'
+              autoComplete='Last Name'
+              onChange={(e) => setLastName(e.target.value)}
+              className='block w-full py-3 px-1 mt-2 
+                    text-gray-800 appearance-none 
+                    border-b-2 border-gray-100
+                    focus:text-gray-500 focus:outline-none focus:border-gray-200'
+              required
+            />
             <label className='block text-xs font-semibold text-gray-600 uppercase'>
               E-mail
             </label>

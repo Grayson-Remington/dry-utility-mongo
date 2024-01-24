@@ -5,6 +5,7 @@ import TaskGrid from "@/components/taskGrid";
 import ContactsGrid from "@/components/contactsGrid";
 import { Button, ButtonGroup } from "@mui/material";
 import TodoGrid from "@/components/todoGrid";
+import { useSession } from "next-auth/react";
 
 export async function getServerSideProps(context: any) {
   const { projectNumber } = context.query;
@@ -25,6 +26,7 @@ export default function ProjectPage({ projectNumber }: any) {
   const [contacts, setContacts] = useState<any[] | undefined>();
   const [todos, setTodos] = useState<any[] | undefined>();
   const [selectedGrid, setSelectedGrid] = useState<string>("Tasks");
+  const { data: session, status } = useSession();
   const getTasks = async () => {
     try {
       const response = await fetch("/api/getTasks", {
@@ -88,7 +90,34 @@ export default function ProjectPage({ projectNumber }: any) {
       console.error("An error occurred:", error);
     }
   };
+  function stringToColor(string: string) {
+    let hash = 0;
+    let i;
 
+    /* eslint-disable no-bitwise */
+    for (i = 0; i < string.length; i += 1) {
+      hash = string.charCodeAt(i) + ((hash << 5) - hash);
+    }
+
+    let color = "#";
+
+    for (i = 0; i < 3; i += 1) {
+      const value = (hash >> (i * 8)) & 0xff;
+      color += `00${value.toString(16)}`.slice(-2);
+    }
+    /* eslint-enable no-bitwise */
+
+    return color;
+  }
+
+  function stringAvatar(name: string) {
+    return {
+      sx: {
+        bgcolor: stringToColor(name),
+      },
+      children: `${name.split(" ")[0][0]}${name.split(" ")[1][0]}`,
+    };
+  }
   useEffect(() => {
     getTasks();
     getContacts();

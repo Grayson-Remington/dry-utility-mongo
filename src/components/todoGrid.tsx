@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { useConfirm } from "material-ui-confirm";
-import { Tooltip } from "@mui/material";
+import { Avatar, Tooltip } from "@mui/material";
 export default function TodoGrid({ todos, setTodos, projectNumber }: any) {
   const { data: session, status } = useSession();
   const confirm = useConfirm();
@@ -48,6 +48,34 @@ export default function TodoGrid({ todos, setTodos, projectNumber }: any) {
         /* ... */
       });
   };
+  function stringToColor(string: string) {
+    let hash = 0;
+    let i;
+
+    /* eslint-disable no-bitwise */
+    for (i = 0; i < string.length; i += 1) {
+      hash = string.charCodeAt(i) + ((hash << 5) - hash);
+    }
+
+    let color = "#";
+
+    for (i = 0; i < 3; i += 1) {
+      const value = (hash >> (i * 8)) & 0xff;
+      color += `00${value.toString(16)}`.slice(-2);
+    }
+    /* eslint-enable no-bitwise */
+
+    return color;
+  }
+
+  function stringAvatar(name: string) {
+    return {
+      sx: {
+        bgcolor: stringToColor(name),
+      },
+      children: `${name.split(" ")[0][0]}${name.split(" ")[1][0]}`,
+    };
+  }
   const columns: GridColDef[] = [
     {
       field: "date",
@@ -69,7 +97,7 @@ export default function TodoGrid({ todos, setTodos, projectNumber }: any) {
     {
       field: "todoClass",
       headerName: "Category",
-      width: 130,
+      width: 100,
       cellClassName: (params) =>
         params.row.todoClass == "Power"
           ? "bg-red-500"
@@ -78,11 +106,28 @@ export default function TodoGrid({ todos, setTodos, projectNumber }: any) {
           : params.row.todoClass == "Telco"
           ? "bg-orange-500"
           : "bg-purple-500",
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "author",
+      headerName: "Author",
+      width: 60,
+      renderCell: (params) => (
+        <Avatar
+          className=' text-sm h-8 w-8 items-center justify-center flex'
+          {...stringAvatar(
+            `${params.row.author ? params.row.author : "Filler Name"}`
+          )}
+        />
+      ),
+      align: "right",
+      headerAlign: "center",
     },
     {
       field: "delete",
       headerName: "Delete",
-      width: 100,
+      width: 80,
 
       renderCell: (params) => (
         <button className='p-2' onClick={() => deleteTodo(params.row.id)}>
@@ -122,6 +167,7 @@ export default function TodoGrid({ todos, setTodos, projectNumber }: any) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          author: session?.user?.name,
           projectNumber: projectNumber,
           todoClass: newItem.todoClass,
           date: newItem.date,
@@ -159,6 +205,7 @@ export default function TodoGrid({ todos, setTodos, projectNumber }: any) {
     // You can now access the formData object and perform any actions (e.g., send data to the server)
     console.log("Form submitted:", todoFormData);
     const newItem = {
+      author: session?.user?.name,
       projectNumber: projectNumber,
       todoClass: todoFormData.todoClass,
       date: todoFormData.date,

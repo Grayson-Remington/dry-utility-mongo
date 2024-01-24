@@ -2,6 +2,7 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { FaRegTrashAlt } from "react-icons/fa";
+import { useConfirm } from "material-ui-confirm";
 
 export default function ContactsGrid({
   contacts,
@@ -9,7 +10,7 @@ export default function ContactsGrid({
   projectNumber,
 }: any) {
   const { data: session, status } = useSession();
-
+  const confirm = useConfirm();
   const columns: GridColDef[] = [
     {
       field: "name",
@@ -21,7 +22,7 @@ export default function ContactsGrid({
     {
       field: "contactClass",
       headerName: "Category",
-      width: 130,
+      width: 100,
       cellClassName: (params) =>
         params.row.contactClass == "Power"
           ? "bg-red-500"
@@ -30,6 +31,8 @@ export default function ContactsGrid({
           : params.row.contactClass == "Telco"
           ? "bg-orange-500"
           : "bg-purple-500",
+      align: "center",
+      headerAlign: "center",
     },
     {
       field: "delete",
@@ -123,25 +126,31 @@ export default function ContactsGrid({
     setContacts((prevData: any) => [...prevData, newItem]);
   };
   const deleteContact = async (id: any) => {
-    try {
-      const response = await fetch("/api/deleteContact", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ id: id }),
-      });
+    confirm({ description: "This action is permanent!" })
+      .then(async () => {
+        try {
+          const response = await fetch("/api/deleteContact", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ id: id }),
+          });
 
-      if (response.ok) {
-        const data = await response.json();
-        setContacts(contacts!.filter((obj: any) => obj.id !== id));
-        console.log(data); // Handle success
-      } else {
-        console.error("Failed to sign up");
-      }
-    } catch (error) {
-      console.error("An error occurred:", error);
-    }
+          if (response.ok) {
+            const data = await response.json();
+            setContacts(contacts!.filter((obj: any) => obj.id !== id));
+            console.log(data); // Handle success
+          } else {
+            console.error("Failed to sign up");
+          }
+        } catch (error) {
+          console.error("An error occurred:", error);
+        }
+      })
+      .catch(() => {
+        /* ... */
+      });
   };
   return (
     <>

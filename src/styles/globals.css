@@ -5,5 +5,5 @@
 body,
 html,
 #__next {
-  height: 100%;
+  height: fit-content;
 }

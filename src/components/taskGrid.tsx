@@ -28,11 +28,17 @@ export default function TaskGrid({ tasks, setTasks, projectNumber }: any) {
       width: 130,
       renderCell: (params) => <div>{formatDate(params.row.date)}</div>,
     },
-    { field: "text", headerName: "Information", width: 300, flex: 1 },
+    {
+      field: "text",
+      headerName: "Information",
+      width: 300,
+      minWidth: 300,
+      flex: 1,
+    },
     {
       field: "taskClass",
       headerName: "Category",
-      width: 130,
+      width: 100,
       cellClassName: (params) =>
         params.row.taskClass == "Power"
           ? "bg-red-500"
@@ -41,6 +47,8 @@ export default function TaskGrid({ tasks, setTasks, projectNumber }: any) {
           : params.row.taskClass == "Telco"
           ? "bg-orange-500"
           : "bg-purple-500",
+      align: "center",
+      headerAlign: "center",
     },
     {
       field: "delete",
@@ -104,27 +112,7 @@ export default function TaskGrid({ tasks, setTasks, projectNumber }: any) {
   };
   const deleteTask = async (id: any) => {
     confirm({ description: "This action is permanent!" })
-      .then(async () => {
-        try {
-          const response = await fetch("/api/deleteTask", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ id: id }),
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            setTasks(tasks!.filter((obj: any) => obj.id !== id));
-            console.log(data); // Handle success
-          } else {
-            console.error("Failed to sign up");
-          }
-        } catch (error) {
-          console.error("An error occurred:", error);
-        }
-      })
+      .then(async () => {})
       .catch(() => {
         /* ... */
       });
