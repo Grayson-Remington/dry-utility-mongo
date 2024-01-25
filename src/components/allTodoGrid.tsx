@@ -282,7 +282,7 @@ export default function AllTodoGrid({ todos, setTodos, projects }: any) {
               </button>
             </div>
           </form>
-          <div style={{ height: 400, width: "100%" }}>
+          <div style={{ height: 450, width: "100%" }}>
             <DataGrid
               getRowId={getRowId}
               rows={todos}

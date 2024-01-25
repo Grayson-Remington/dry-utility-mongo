@@ -37,7 +37,7 @@ export default function ContactsGrid({
     {
       field: "delete",
       headerName: "Delete",
-      width: 100,
+      width: 70,
       renderCell: (params) => (
         <button className='p-2' onClick={() => deleteContact(params.row.id)}>
           <FaRegTrashAlt />
@@ -246,10 +246,10 @@ export default function ContactsGrid({
               columns={columns}
               initialState={{
                 pagination: {
-                  paginationModel: { page: 0, pageSize: 5 },
+                  paginationModel: { page: 0, pageSize: 10 },
                 },
               }}
-              pageSizeOptions={[5, 10]}
+              pageSizeOptions={[10, 20]}
             />
           </div>
         </div>

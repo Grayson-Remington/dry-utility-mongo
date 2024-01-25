@@ -29,7 +29,7 @@ export default function ProjectsGrid({ projects, setProjects }: any) {
       width: 500,
       renderCell: (params) => (
         <Link
-          className='hover:bg-gray-200 border w-full text-center border-black rounded-lg m-1 p-2'
+          className='hover:bg-blue-200 hover:font-bold hover:text-lg border w-full text-center border-black p-3 hover:scale-105 transition-transform'
           href={`/${params.row.projectNumber}`}
           as={`/${params.row.projectNumber}`}>
           {params.row.projectNumber}
@@ -170,7 +170,7 @@ export default function ProjectsGrid({ projects, setProjects }: any) {
               </button>
             </div>
           </form>
-          <div style={{ height: 400, width: "100%" }}>
+          <div style={{ height: 500, width: "100%" }}>
             {projects && (
               <DataGrid
                 getRowId={getRowId}
@@ -178,10 +178,10 @@ export default function ProjectsGrid({ projects, setProjects }: any) {
                 columns={columns}
                 initialState={{
                   pagination: {
-                    paginationModel: { page: 0, pageSize: 5 },
+                    paginationModel: { page: 0, pageSize: 10 },
                   },
                 }}
-                pageSizeOptions={[5, 10]}
+                pageSizeOptions={[10, 10]}
               />
             )}
             {/* {projects.map((project) => (

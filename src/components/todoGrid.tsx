@@ -127,7 +127,7 @@ export default function TodoGrid({ todos, setTodos, projectNumber }: any) {
     {
       field: "delete",
       headerName: "Delete",
-      width: 80,
+      width: 70,
 
       renderCell: (params) => (
         <button className='p-2' onClick={() => deleteTodo(params.row.id)}>
@@ -271,20 +271,20 @@ export default function TodoGrid({ todos, setTodos, projectNumber }: any) {
               </button>
             </div>
           </form>
-          <div style={{ height: 400, width: "100%" }}>
+          <div style={{ height: 450, width: "100%" }}>
             <DataGrid
               getRowId={getRowId}
               rows={todos}
               columns={columns}
               initialState={{
                 pagination: {
-                  paginationModel: { page: 0, pageSize: 5 },
+                  paginationModel: { page: 0, pageSize: 10 },
                 },
                 sorting: {
                   sortModel: [{ field: "date", sort: "desc" }],
                 },
               }}
-              pageSizeOptions={[5, 10]}
+              pageSizeOptions={[10, 20]}
             />
           </div>
         </div>

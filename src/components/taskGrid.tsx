@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { useConfirm } from "material-ui-confirm";
+import { Avatar } from "@mui/material";
 export default function TaskGrid({ tasks, setTasks, projectNumber }: any) {
   const { data: session, status } = useSession();
   const confirm = useConfirm();
@@ -20,7 +21,34 @@ export default function TaskGrid({ tasks, setTasks, projectNumber }: any) {
 
     return formattedDate;
   }
+  function stringToColor(string: string) {
+    let hash = 0;
+    let i;
 
+    /* eslint-disable no-bitwise */
+    for (i = 0; i < string.length; i += 1) {
+      hash = string.charCodeAt(i) + ((hash << 5) - hash);
+    }
+
+    let color = "#";
+
+    for (i = 0; i < 3; i += 1) {
+      const value = (hash >> (i * 8)) & 0xff;
+      color += `00${value.toString(16)}`.slice(-2);
+    }
+    /* eslint-enable no-bitwise */
+
+    return color;
+  }
+
+  function stringAvatar(name: string) {
+    return {
+      sx: {
+        bgcolor: stringToColor(name),
+      },
+      children: `${name.split(" ")[0][0]}${name.split(" ")[1][0]}`,
+    };
+  }
   const columns: GridColDef[] = [
     {
       field: "date",
@@ -51,9 +79,24 @@ export default function TaskGrid({ tasks, setTasks, projectNumber }: any) {
       headerAlign: "center",
     },
     {
+      field: "author",
+      headerName: "Author",
+      width: 60,
+      renderCell: (params) => (
+        <Avatar
+          className=' text-sm h-8 w-8 items-center justify-center flex'
+          {...stringAvatar(
+            `${params.row.author ? params.row.author : "Filler Name"}`
+          )}
+        />
+      ),
+      align: "right",
+      headerAlign: "center",
+    },
+    {
       field: "delete",
       headerName: "Delete",
-      width: 100,
+      width: 70,
 
       renderCell: (params) => (
         <button className='p-2' onClick={() => deleteTask(params.row.id)}>
@@ -92,6 +135,7 @@ export default function TaskGrid({ tasks, setTasks, projectNumber }: any) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          author: session?.user?.name,
           projectNumber: projectNumber,
           taskClass: newItem.taskClass,
           date: newItem.date,
@@ -112,7 +156,27 @@ export default function TaskGrid({ tasks, setTasks, projectNumber }: any) {
   };
   const deleteTask = async (id: any) => {
     confirm({ description: "This action is permanent!" })
-      .then(async () => {})
+      .then(async () => {
+        try {
+          const response = await fetch("/api/deleteTask", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ id: id }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            setTasks(tasks!.filter((obj: any) => obj.id !== id));
+            console.log(data); // Handle success
+          } else {
+            console.error("Failed to sign up");
+          }
+        } catch (error) {
+          console.error("An error occurred:", error);
+        }
+      })
       .catch(() => {
         /* ... */
       });
@@ -135,6 +199,7 @@ export default function TaskGrid({ tasks, setTasks, projectNumber }: any) {
     // You can now access the formData object and perform any actions (e.g., send data to the server)
     console.log("Form submitted:", taskFormData);
     const newItem = {
+      author: session?.user?.name,
       projectNumber: projectNumber,
       taskClass: taskFormData.taskClass,
       date: taskFormData.date,
@@ -200,20 +265,20 @@ export default function TaskGrid({ tasks, setTasks, projectNumber }: any) {
               </button>
             </div>
           </form>
-          <div className='h-[400px] overflow-hidden'>
+          <div style={{ height: 450, width: "100%" }}>
             <DataGrid
               getRowId={getRowId}
               rows={tasks}
               columns={columns}
               initialState={{
                 pagination: {
-                  paginationModel: { page: 0, pageSize: 5 },
+                  paginationModel: { page: 0, pageSize: 10 },
                 },
                 sorting: {
                   sortModel: [{ field: "date", sort: "desc" }],
                 },
               }}
-              pageSizeOptions={[5, 10]}
+              pageSizeOptions={[10, 20]}
             />
           </div>
         </div>

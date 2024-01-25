@@ -61,13 +61,13 @@ export default function Navbar() {
               Home
             </Link>
             <Avatar
-              className=' text-sm h-8 w-8 mr-1 items-center justify-center flex'
+              className=' text-sm h-8 w-8 items-center justify-center flex'
               {...stringAvatar(`${session?.user?.name}`)}
             />
 
             <button
               onClick={() => signOut({ callbackUrl: "/" })}
-              className='transition-transform transform hover:scale-105 hover:bg-gray-100 rounded-lg h-full flex items-center self-center text-center font-extrabold'>
+              className='transition-transform transform hover:scale-110 hover:bg-gray-100 rounded-lg p-1 flex items-center text-center text-firstcolor font-extrabold'>
               Signout
             </button>
           </>
