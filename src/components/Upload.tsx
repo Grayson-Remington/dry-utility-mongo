@@ -1,7 +1,7 @@
 // pages/upload.js
 
 import { useState } from "react";
-import AWS from "aws-sdk";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 export default function Upload(data: any) {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -27,33 +27,26 @@ export default function Upload(data: any) {
 
     setUploading(true);
 
-    const s3 = new AWS.S3({
-      accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY,
+    let client = new S3Client({
+      region: "us-east-1",
+      credentials: {
+        accessKeyId: process.env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY!,
+      },
     });
-
-    const params = {
+    const command = new PutObjectCommand({
       Bucket: process.env.NEXT_PUBLIC_S3_BUCKET_NAME,
       Key: `${projectNumber}/${projectNumber}.kmz`,
       Body: selectedFile,
-    };
+    });
 
-    const options = {
-      partSize: 10 * 1024 * 1024, // 10 MB part size
-      queueSize: 1, // Number of parallel uploads
-    };
-
-    s3.upload(params, options)
-      .on("httpUploadProgress", (progress) => {
-        setUploadProgress(Math.round((progress.loaded / progress.total) * 100));
-      })
-      .send((err: any, data: any) => {
-        if (err) {
-        } else {
-          setSelectedFile(null);
-        }
-        setUploading(false);
-      });
+    try {
+      const response = await client.send(command);
+      console.log(response);
+      setSelectedFile(null);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
