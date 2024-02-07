@@ -44,6 +44,7 @@ export default function Upload(data: any) {
       const response = await client.send(command);
       console.log(response);
       setSelectedFile(null);
+      setUploading(false);
     } catch (err) {
       console.error(err);
     }
