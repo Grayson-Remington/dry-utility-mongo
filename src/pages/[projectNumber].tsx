@@ -6,6 +6,8 @@ import ContactsGrid from "@/components/contactsGrid";
 import { Button, ButtonGroup } from "@mui/material";
 import TodoGrid from "@/components/todoGrid";
 import { useSession } from "next-auth/react";
+import Upload from "@/components/Upload";
+import MapComponent from "@/components/MapComponent";
 
 export async function getServerSideProps(context: any) {
   const { projectNumber } = context.query;
@@ -149,13 +151,22 @@ export default function ProjectPage({ projectNumber }: any) {
           Contacts
         </button>
         <button
-          className={`p-2 border border-blue-600 rounded-r-md  ${
+          className={`p-2 border border-blue-600  ${
             selectedGrid === "Todos"
               ? "bg-blue-800 text-white hover:bg-blue-800"
               : "text-blue-600"
           }`}
           onClick={() => setSelectedGrid("Todos")}>
           Todos
+        </button>
+        <button
+          className={`p-2 border border-blue-600 rounded-r-md  ${
+            selectedGrid === "Map"
+              ? "bg-blue-800 text-white hover:bg-blue-800"
+              : "text-blue-600"
+          }`}
+          onClick={() => setSelectedGrid("Map")}>
+          Map
         </button>
       </div>
 
@@ -180,6 +191,7 @@ export default function ProjectPage({ projectNumber }: any) {
           projectNumber={projectNumber}
         />
       )}
+      {selectedGrid === "Map" && <MapComponent projectNumber={projectNumber} />}
     </main>
   );
 }
