@@ -11,7 +11,7 @@ export default async function handler(req: any, res: any) {
       {
         $addToSet: {
           // Using $addToSet to avoid adding duplicate users
-          users: { email: email, role: "user" },
+          users: email,
         },
       },
       { upsert: true } // If no matching document found, insert the data
