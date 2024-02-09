@@ -10,21 +10,22 @@ import Upload from "@/components/Upload";
 import MapComponent from "@/components/MapComponent";
 
 export async function getServerSideProps(context: any) {
-  const { projectNumber, projects } = context.query;
+  const { projectNumber, projectId, users } = context.query;
 
   // Fetch tasks based on projectNumber (similar to your existing getTasks function)
   // ...
 
   return {
     props: {
-      projects,
+      projectId,
       projectNumber,
+      users,
       // Pass other data you need to the component
     },
   };
 }
 
-export default function ProjectPage({ projectNumber, projects }: any) {
+export default function ProjectPage({ projectNumber, projectId, users }: any) {
   const [tasks, setTasks] = useState<any[] | undefined>();
   const [contacts, setContacts] = useState<any[] | undefined>();
   const [todos, setTodos] = useState<any[] | undefined>();

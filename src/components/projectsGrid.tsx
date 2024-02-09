@@ -33,8 +33,9 @@ export default function ProjectsGrid({ projects, setProjects }: any) {
           href={{
             pathname: `/${params.row.projectNumber}`,
             query: {
-              projects: projects,
+              projectId: params.row.id,
               projectNumber: params.row.projectNumber,
+              users: params.row.users,
             },
           }}
           as={`/${params.row.projectNumber}`}>
