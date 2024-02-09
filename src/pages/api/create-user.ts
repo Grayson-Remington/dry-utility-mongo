@@ -14,8 +14,8 @@ export default async function handler(req: any, res: any) {
           name: name,
           email: email,
           password: encryptedPassword,
-
           role: "admin",
+          projects: [],
         },
       }, // Data to insert if no matching document is found
       { upsert: true } // If no matching document found, insert the data

@@ -14,6 +14,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
   const [projects, setProjects] = useState<any[] | undefined>();
+  const [projectNumbers, setProjectNumbers] = useState<any[] | undefined>();
   const { data: session, status } = useSession();
   const [selectedGrid, setSelectedGrid] = useState<string>("Projects");
   const [allTodos, setAllTodos] = useState<any[] | undefined>();
@@ -25,11 +26,12 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ email: session?.user?.email }),
       });
 
       if (response.ok) {
         const data = await response.json();
+        setProjectNumbers(data.map((project: any) => project.projectNumber));
         setProjects(data);
         console.log(data); // Handle success
       } else {
@@ -41,9 +43,15 @@ export default function Home() {
   };
 
   useEffect(() => {
+    if (!session) return;
+
     getProjects();
+  }, [session]);
+  useEffect(() => {
+    if (!projects) return;
+
     getAllTodos();
-  }, []);
+  }, [projects]);
   const getAllTodos = async () => {
     try {
       const response = await fetch("/api/getAllTodos", {
@@ -51,7 +59,7 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ projects: projectNumbers }),
       });
 
       if (response.ok) {

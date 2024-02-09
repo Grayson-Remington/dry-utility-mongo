@@ -10,20 +10,21 @@ import Upload from "@/components/Upload";
 import MapComponent from "@/components/MapComponent";
 
 export async function getServerSideProps(context: any) {
-  const { projectNumber } = context.query;
+  const { projectNumber, projects } = context.query;
 
   // Fetch tasks based on projectNumber (similar to your existing getTasks function)
   // ...
 
   return {
     props: {
+      projects,
       projectNumber,
       // Pass other data you need to the component
     },
   };
 }
 
-export default function ProjectPage({ projectNumber }: any) {
+export default function ProjectPage({ projectNumber, projects }: any) {
   const [tasks, setTasks] = useState<any[] | undefined>();
   const [contacts, setContacts] = useState<any[] | undefined>();
   const [todos, setTodos] = useState<any[] | undefined>();
@@ -120,17 +121,83 @@ export default function ProjectPage({ projectNumber }: any) {
       children: `${name.split(" ")[0][0]}${name.split(" ")[1][0]}`,
     };
   }
+
+  const addUserToProject = async (newItem: any) => {
+    try {
+      const response = await fetch("/api/addUserToProject", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          projectNumber: projectNumber,
+          email: newItem.email,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setEmailFormData({
+          email: null,
+        });
+        console.log(data); // Handle success
+      } else {
+        console.error("Failed to sign up");
+      }
+    } catch (error) {
+      console.error("An error occurred:", error);
+    }
+  };
+
   useEffect(() => {
     getTasks();
     getContacts();
     getTodos();
   }, []);
+  const [emailFormData, setEmailFormData] = useState({
+    email: null,
+  });
+  const handleEmailInputChange = (e: any) => {
+    const { name, value } = e.target;
+    setEmailFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+  const handleEmailSubmit = (e: any) => {
+    e.preventDefault();
+    // You can now access the formData object and perform any actions (e.g., send data to the server)
+    console.log("Form submitted:", emailFormData);
+    const newItem = {
+      email: emailFormData.email,
+    };
+    addUserToProject(newItem);
+    // Update the state by creating a new array with the new item
+  };
 
   return (
     <main className='w-full h-full min-h-screen flex flex-col items-center bg-blue-200 px-4'>
       <Navbar />
       <h1 className='text-2xl underline py-2'>{projectNumber}</h1>
 
+      <form onSubmit={handleEmailSubmit}>
+        <div className='w-full flex gap-2 py-1 border-b border-black'>
+          <div className=' h-full w-full pr-1 border-black font-bold'>
+            <input
+              type='text'
+              name='email' // Add name attribute to identify the input in handleInputChange
+              value={emailFormData.email || ""}
+              onChange={handleEmailInputChange}
+              required
+              className='border border-black rounded-md w-full'
+            />
+          </div>
+
+          <button type='submit' className='border border-black rounded-lg'>
+            Add
+          </button>
+        </div>
+      </form>
       <div className=''>
         <button
           className={`p-2  border border-blue-600 rounded-l-md  ${

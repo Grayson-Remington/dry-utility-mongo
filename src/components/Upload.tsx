@@ -54,7 +54,7 @@ export default function Upload(data: any) {
     <div className='bg-white w-full p-1 flex justify-around rounded-t-lg'>
       <input
         type='file'
-        accept='.kmz, application/vnd.google-earth.kmz'
+        accept='.kmz, application/vnd.google-earth.kmz, .kml, application/vnd.google-earth.kml'
         onChange={handleFileChange}
       />
       <button className='' onClick={uploadFile} disabled={uploading}>

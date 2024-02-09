@@ -30,7 +30,13 @@ export default function ProjectsGrid({ projects, setProjects }: any) {
       renderCell: (params) => (
         <Link
           className='hover:bg-blue-200 hover:font-bold hover:text-lg border w-full text-center border-black p-3 hover:scale-105 transition-transform'
-          href={`/${params.row.projectNumber}`}
+          href={{
+            pathname: `/${params.row.projectNumber}`,
+            query: {
+              projects: projects,
+              projectNumber: params.row.projectNumber,
+            },
+          }}
           as={`/${params.row.projectNumber}`}>
           {params.row.projectNumber}
         </Link>
@@ -86,6 +92,7 @@ export default function ProjectsGrid({ projects, setProjects }: any) {
         body: JSON.stringify({
           projectNumber: newItem.projectNumber,
           id: newItem.id,
+          email: session!.user!.email,
         }),
       });
 
