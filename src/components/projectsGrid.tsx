@@ -153,6 +153,7 @@ export default function ProjectsGrid({ projects, setProjects }: any) {
     const newItem = {
       projectNumber: projectFormData.projectNumber,
       id: Math.floor(Math.random() * 1000000000),
+      users: [{ email: session?.user?.email, role: "admin" }],
     };
     addProject(newItem);
     // Update the state by creating a new array with the new item
