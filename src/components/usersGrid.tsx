@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { useConfirm } from "material-ui-confirm";
 import Link from "next/link";
-export default function ProjectsGrid({ projects, setProjects }: any) {
+export default function UsersGrid({ users, setUsers, projectNumber }: any) {
   const { data: session, status } = useSession();
   const confirm = useConfirm();
   function formatDate(inputDate: any) {
@@ -21,30 +21,23 @@ export default function ProjectsGrid({ projects, setProjects }: any) {
 
     return formattedDate;
   }
-  console.log(projects);
+  console.log(users);
   const columns: GridColDef[] = [
     {
-      field: "projectNumber",
-      headerName: "Project Number",
+      field: "users",
+      headerName: "Users",
       width: 500,
-      renderCell: (params) => (
-        <Link
-          className='hover:bg-blue-200 hover:font-bold hover:text-lg border w-full text-center border-black p-3 hover:scale-105 transition-transform'
-          href={{
-            pathname: `/${params.row.projectNumber}`,
-            query: {
-              projectId: params.row.id.toString(),
-              projectNumber: params.row.projectNumber,
-              role: params.row.users.find(
-                (user: any) => user.email === session?.user?.email
-              ).role,
-            },
-          }}
-          as={`/${params.row.projectNumber}`}>
-          {params.row.projectNumber}
-        </Link>
-      ),
+      renderCell: (params) => <div>{params.row.email}</div>,
       flex: 1,
+      align: "center",
+      headerAlign: "center",
+    },
+    {
+      field: "role",
+      headerName: "Role",
+      width: 200,
+      renderCell: (params) => <div>{params.row.role}</div>,
+      align: "center",
       headerAlign: "center",
     },
     {
@@ -52,11 +45,7 @@ export default function ProjectsGrid({ projects, setProjects }: any) {
       headerName: "Delete",
       width: 100,
       renderCell: (params) => (
-        <button
-          className='p-2'
-          onClick={() =>
-            deleteProject(params.row.id, params.row.projectNumber)
-          }>
+        <button className='p-2' onClick={() => deleteUser(params.row.email)}>
           <FaRegTrashAlt />
         </button>
       ),
@@ -83,24 +72,32 @@ export default function ProjectsGrid({ projects, setProjects }: any) {
     // },
   ];
   function getRowId(row: any) {
-    return row.id;
+    return row.id | Math.floor(Math.random() * 1000000000);
   }
-  const addProject = async (newItem: any) => {
+  const [userFormData, setUserFormData] = useState({
+    email: "",
+    role: "user",
+  });
+  const addUserToProject = async (newItem: any) => {
     try {
-      const response = await fetch("/api/addProject", {
+      const response = await fetch("/api/addUserToProject", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          projectNumber: newItem.projectNumber,
-          id: newItem.id,
-          email: session!.user!.email,
+          projectNumber: projectNumber,
+          email: newItem.email,
+          role: newItem.role,
         }),
       });
 
       if (response.ok) {
         const data = await response.json();
+        setUserFormData({
+          email: "",
+          role: "",
+        });
         console.log(data); // Handle success
       } else {
         console.error("Failed to sign up");
@@ -109,21 +106,42 @@ export default function ProjectsGrid({ projects, setProjects }: any) {
       console.error("An error occurred:", error);
     }
   };
-  const deleteProject = async (id: any, projectNumber: any) => {
+  const handleUserInputChange = (e: any) => {
+    const { name, value } = e.target;
+    setUserFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+  const handleUserSubmit = (e: any) => {
+    e.preventDefault();
+    // You can now access the formData object and perform any actions (e.g., send data to the server)
+    console.log("Form submitted:", userFormData);
+    const newItem = {
+      email: userFormData.email,
+      role: userFormData.role,
+    };
+    addUserToProject(newItem);
+    // Update the state by creating a new array with the new item
+  };
+  const deleteUser = async (email: any) => {
     confirm({ description: "This action is permanent!" })
       .then(async () => {
         try {
-          const response = await fetch("/api/deleteProject", {
+          const response = await fetch("/api/deleteUser", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ id: id, projectNumber: projectNumber }),
+            body: JSON.stringify({
+              projectNumber: projectNumber,
+              email: email,
+            }),
           });
 
           if (response.ok) {
             const data = await response.json();
-            setProjects(projects!.filter((obj: any) => obj.id !== id));
+            setUsers(users!.filter((obj: any) => obj.email !== email));
             console.log(data); // Handle success
           } else {
             console.error("Failed to sign up");
@@ -136,43 +154,38 @@ export default function ProjectsGrid({ projects, setProjects }: any) {
         /* ... */
       });
   };
-  const [projectFormData, setProjectFormData] = useState({
-    projectNumber: "",
-  });
-  const handleProjectInputChange = (e: any) => {
-    const { name, value } = e.target;
-    setProjectFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
-  const handleProjectSubmit = (e: any) => {
-    e.preventDefault();
-    // You can now access the formData object and perform any actions (e.g., send data to the server)
-    console.log("Form submitted:", projectFormData);
-    const newItem = {
-      projectNumber: projectFormData.projectNumber,
-      id: Math.floor(Math.random() * 1000000000),
-    };
-    addProject(newItem);
-    // Update the state by creating a new array with the new item
-    setProjects((prevData: any) => [...prevData, newItem]);
-  };
+
   return (
     <>
-      {status === "authenticated" && projects && (
+      {status === "authenticated" && users && (
         <div className='max-w-4xl bg-white rounded-lg w-full p-1'>
-          <form onSubmit={handleProjectSubmit}>
+          <form onSubmit={handleUserSubmit}>
             <div className='w-full flex gap-2 py-1 border-b border-black'>
-              <div className=' h-full w-full pr-1 border-black font-bold'>
+              <div className='flex h-full w-full pr-1 border-black font-bold'>
                 <input
-                  type='text'
-                  name='projectNumber' // Add name attribute to identify the input in handleInputChange
-                  value={projectFormData.projectNumber}
-                  onChange={handleProjectInputChange}
+                  type='email'
+                  name='email' // Add name attribute to identify the input in handleInputChange
+                  value={userFormData.email || undefined}
+                  onChange={handleUserInputChange}
                   required
                   className='border border-black rounded-md w-full'
                 />
+                <select
+                  className={`rounded-lg p-1 font-bold `}
+                  value={userFormData.role}
+                  onChange={handleUserInputChange}
+                  id='role'
+                  name='role'>
+                  <option className='' value='user'>
+                    User
+                  </option>
+                  <option className='' value='admin'>
+                    Admin
+                  </option>
+                  <option className='' value='shareholder'>
+                    Shareholder
+                  </option>
+                </select>
               </div>
 
               <button type='submit' className='border border-black rounded-lg'>
@@ -181,10 +194,10 @@ export default function ProjectsGrid({ projects, setProjects }: any) {
             </div>
           </form>
           <div style={{ height: 500, width: "100%" }}>
-            {projects && (
+            {users && (
               <DataGrid
                 getRowId={getRowId}
-                rows={projects}
+                rows={users}
                 columns={columns}
                 initialState={{
                   pagination: {

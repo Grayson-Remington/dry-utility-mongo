@@ -12,7 +12,7 @@ export default async function handler(req: any, res: any) {
         $setOnInsert: {
           projectNumber: projectNumber,
           id: id,
-          users: [email],
+          users: [{ email: email, role: "admin" }],
         },
       }, // Data to insert if no matching document is found
       { upsert: true } // If no matching document found, insert the data

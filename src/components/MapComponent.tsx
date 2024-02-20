@@ -2,44 +2,80 @@ import { useEffect } from "react";
 import { loadModules } from "esri-loader";
 import Upload from "./Upload";
 
-const MapComponent = (data: any) => {
-  let { projectNumber } = data;
+const MapComponent = ({ projectNumber, files }: any) => {
   function replaceSpacesWithPluses(inputString: any) {
     // Use the replace method with a regular expression to replace all spaces with pluses
     return inputString.replace(/ /g, "+");
   }
+  console.log(files);
+  function replaceSpacesWithPlus(inputString: any) {
+    // Use the replace() method with a regular expression to replace spaces with "+"
+    var replacedString = inputString.replace(/ /g, "+");
+    return replacedString;
+  }
   let updatedProjectNumber = replaceSpacesWithPluses(projectNumber);
-
+  function findFirstKmzFile(files: any) {
+    for (const file of files) {
+      if (file.Key.includes(".kmz")) {
+        return file;
+      }
+    }
+    return null; // Return null if no .kmz file is found
+  }
   useEffect(() => {
-    loadModules(["esri/Map", "esri/views/MapView", "esri/layers/KMLLayer"])
-      .then(([Map, MapView, KMLLayer]) => {
-        const map = new Map({
-          basemap: "satellite",
-        });
+    loadModules([
+      "esri/Map",
+      "esri/views/MapView",
+      "esri/layers/KMLLayer",
+      "esri/layers/GraphicsLayer",
+      "esri/Graphic",
+      "esri/symbols/TextSymbol",
+      "esri/Color",
+    ])
+      .then(
+        ([
+          Map,
+          MapView,
+          KMLLayer,
+          GraphicsLayer,
+          Graphic,
+          TextSymbol,
+          Color,
+        ]) => {
+          const map = new Map({
+            basemap: "satellite",
+          });
 
-        const view = new MapView({
-          container: "viewDiv",
-          map,
-          center: [-77.434769, 37.54129], // Replace with the desired center coordinates
-          zoom: 5,
-          ui: {
-            components: [], // Remove all default UI components
-          },
-        });
+          const view = new MapView({
+            container: "viewDiv",
+            map: map, // Pass the map instance
+            center: [-77.434769, 37.54129],
+            zoom: 5,
+            ui: {
+              components: [],
+            },
+          });
 
-        const kmlLayer = new KMLLayer({
-          url: `https://${process.env.NEXT_PUBLIC_S3_BUCKET_NAME}.s3.amazonaws.com/${updatedProjectNumber}/${updatedProjectNumber}.kmz`, // Replace with the actual path to your KMZ file
-        });
+          // Create a GraphicsLayer for labels
 
-        map.add(kmlLayer);
-        kmlLayer.load().then(function () {
-          // Get the extent of the KML layer
-          var extent = kmlLayer.fullExtent;
+          const kmlLayer = new KMLLayer({
+            url: `https://${
+              process.env.NEXT_PUBLIC_S3_BUCKET_NAME
+            }.s3.amazonaws.com/${replaceSpacesWithPlus(
+              findFirstKmzFile(files).Key
+            )}`,
+          });
 
-          // Zoom to the extent of the KML layer
-          view.goTo(extent);
-        });
-      })
+          map.add(kmlLayer);
+
+          kmlLayer.load().then(() => {
+            // Get the extent of the KML layer
+            var extent = kmlLayer.fullExtent;
+
+            view.goTo(extent);
+          });
+        }
+      )
       .catch((err) => {});
   }, [updatedProjectNumber]);
 
