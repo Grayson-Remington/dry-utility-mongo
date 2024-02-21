@@ -35,6 +35,7 @@ export default function ProjectsGrid({ projects, setProjects }: any) {
           href={{
             pathname: `/${params.row.projectName}`,
             query: {
+              projectName: params.row.projectName,
               projectId: params.row.id.toString(),
               projectNumber: params.row.projectNumber,
               role: params.row.users.find(
@@ -106,6 +107,7 @@ export default function ProjectsGrid({ projects, setProjects }: any) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          projectName: newItem.projectName,
           projectNumber: newItem.projectNumber,
           id: newItem.id,
           email: session!.user!.email,

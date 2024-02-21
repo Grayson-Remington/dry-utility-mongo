@@ -14,14 +14,16 @@ import jsCookies from "js-cookie";
 import serverCookies from "cookies";
 import UsersGrid from "@/components/usersGrid";
 export async function getServerSideProps(context: any) {
-  let { projectNumber, projectId, role } = context.query;
+  let { projectName, projectNumber, projectId, role } = context.query;
   const cookies = new serverCookies(context.req, context.res);
   const cookieProjectNumber = cookies.get("projectNumber");
   const cookieProjectId = cookies.get("projectId");
+  const cookieProjectName = cookies.get("projectName");
   const cookieRole = cookies.get("role");
   if (projectId !== undefined) {
     return {
       props: {
+        projectName,
         projectNumber,
         projectId,
         role,
@@ -30,6 +32,7 @@ export async function getServerSideProps(context: any) {
   } else {
     return {
       props: {
+        projectName: decodeURIComponent(cookieProjectName!),
         projectNumber: decodeURIComponent(cookieProjectNumber!),
         projectId: decodeURIComponent(cookieProjectId!),
         role: decodeURIComponent(cookieRole!),
@@ -38,7 +41,12 @@ export async function getServerSideProps(context: any) {
   }
 }
 
-export default function ProjectPage({ projectNumber, projectId, role }: any) {
+export default function ProjectPage({
+  projectName,
+  projectNumber,
+  projectId,
+  role,
+}: any) {
   const [tasks, setTasks] = useState<any[] | undefined>();
   const [contacts, setContacts] = useState<any[] | undefined>();
   const [todos, setTodos] = useState<any[] | undefined>();
@@ -50,6 +58,7 @@ export default function ProjectPage({ projectNumber, projectId, role }: any) {
 
   useEffect(() => {
     // Set cookies
+    jsCookies.set("projectName", projectName);
     jsCookies.set("projectNumber", projectNumber);
     jsCookies.set("projectId", projectId);
     jsCookies.set("role", role);
@@ -213,7 +222,7 @@ export default function ProjectPage({ projectNumber, projectId, role }: any) {
     getTodos();
     fetchFiles();
   }, []);
-  console.log(users, "users");
+
   const [emailFormData, setEmailFormData] = useState({
     email: null,
   });
@@ -221,7 +230,7 @@ export default function ProjectPage({ projectNumber, projectId, role }: any) {
   return (
     <main className='w-full h-full min-h-screen flex flex-col items-center bg-blue-200 px-4'>
       <Navbar />
-      <h1 className='text-2xl underline py-2'>{projectNumber}</h1>
+      <h1 className='text-2xl underline py-2'>{projectName}</h1>
 
       <div className=''>
         <button

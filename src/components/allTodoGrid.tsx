@@ -272,6 +272,7 @@ export default function AllTodoGrid({ todos, setTodos, projects }: any) {
                     Project Number
                   </InputLabel>
                   <Select
+                    required
                     labelId='projectNumber-label'
                     value={todoFormData.projectNumber}
                     onChange={handleTodoInputChange}

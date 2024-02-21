@@ -4,12 +4,13 @@ export default async function handler(req: any, res: any) {
   try {
     const client = await clientPromise;
     const db = client.db("dryUdb");
-    const { projectNumber, id, email } = req.body;
+    const { projectName, projectNumber, id, email } = req.body;
 
     const response = await db.collection("projects").updateOne(
       { projectNumber: projectNumber }, // Query for finding an existing item with the same name
       {
         $setOnInsert: {
+          projectName: projectName,
           projectNumber: projectNumber,
           id: id,
           users: [{ email: email, role: "admin" }],
