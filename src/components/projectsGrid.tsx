@@ -4,6 +4,8 @@ import { useSession } from "next-auth/react";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { useConfirm } from "material-ui-confirm";
 import Link from "next/link";
+import { TextField } from "@mui/material";
+import toast, { Toaster } from "react-hot-toast";
 export default function ProjectsGrid({ projects, setProjects }: any) {
   const { data: session, status } = useSession();
   const confirm = useConfirm();
@@ -24,14 +26,14 @@ export default function ProjectsGrid({ projects, setProjects }: any) {
   console.log(projects);
   const columns: GridColDef[] = [
     {
-      field: "projectNumber",
-      headerName: "Project Number",
+      field: "projectName",
+      headerName: "Project Name",
       width: 500,
       renderCell: (params) => (
         <Link
-          className='hover:bg-blue-200 hover:font-bold hover:text-lg border w-full text-center border-black p-3 hover:scale-105 transition-transform'
+          className='hover:bg-blue-200 hover:font-bold hover:text-lg border rounded-lg w-full text-center border-black p-3 hover:scale-105 transition-transform'
           href={{
-            pathname: `/${params.row.projectNumber}`,
+            pathname: `/${params.row.projectName}`,
             query: {
               projectId: params.row.id.toString(),
               projectNumber: params.row.projectNumber,
@@ -40,12 +42,23 @@ export default function ProjectsGrid({ projects, setProjects }: any) {
               ).role,
             },
           }}
-          as={`/${params.row.projectNumber}`}>
-          {params.row.projectNumber}
+          as={`/${params.row.projectName}`}>
+          {params.row.projectName}
         </Link>
       ),
-      flex: 1,
+      flex: 3,
+      minWidth: 200,
       headerAlign: "center",
+    },
+    {
+      field: "projectNumber",
+      headerName: "Project Number",
+      width: 500,
+      renderCell: (params) => <>{params.row.projectNumber}</>,
+      flex: 1,
+      minWidth: 180,
+      headerAlign: "center",
+      align: "center",
     },
     {
       field: "delete",
@@ -102,8 +115,10 @@ export default function ProjectsGrid({ projects, setProjects }: any) {
       if (response.ok) {
         const data = await response.json();
         console.log(data); // Handle success
+        toast.success("Successfully added Project");
       } else {
         console.error("Failed to sign up");
+        toast.error("Unable to add Project");
       }
     } catch (error) {
       console.error("An error occurred:", error);
@@ -125,8 +140,10 @@ export default function ProjectsGrid({ projects, setProjects }: any) {
             const data = await response.json();
             setProjects(projects!.filter((obj: any) => obj.id !== id));
             console.log(data); // Handle success
+            toast.success("Successfully deleted Project");
           } else {
             console.error("Failed to sign up");
+            toast.success("Unable to delete Project");
           }
         } catch (error) {
           console.error("An error occurred:", error);
@@ -138,6 +155,7 @@ export default function ProjectsGrid({ projects, setProjects }: any) {
   };
   const [projectFormData, setProjectFormData] = useState({
     projectNumber: "",
+    projectName: "",
   });
   const handleProjectInputChange = (e: any) => {
     const { name, value } = e.target;
@@ -151,6 +169,7 @@ export default function ProjectsGrid({ projects, setProjects }: any) {
     // You can now access the formData object and perform any actions (e.g., send data to the server)
     console.log("Form submitted:", projectFormData);
     const newItem = {
+      projectName: projectFormData.projectName,
       projectNumber: projectFormData.projectNumber,
       id: Math.floor(Math.random() * 1000000000),
       users: [{ email: session?.user?.email, role: "admin" }],
@@ -161,22 +180,35 @@ export default function ProjectsGrid({ projects, setProjects }: any) {
   };
   return (
     <>
+      <Toaster />
       {status === "authenticated" && projects && (
         <div className='max-w-4xl bg-white rounded-lg w-full p-1'>
           <form onSubmit={handleProjectSubmit}>
-            <div className='w-full flex gap-2 py-1 border-b border-black'>
-              <div className=' h-full w-full pr-1 border-black font-bold'>
-                <input
-                  type='text'
-                  name='projectNumber' // Add name attribute to identify the input in handleInputChange
-                  value={projectFormData.projectNumber}
-                  onChange={handleProjectInputChange}
-                  required
-                  className='border border-black rounded-md w-full'
-                />
-              </div>
+            <div className='w-full flex gap-2 p-1 border-black'>
+              <TextField
+                id='outlined-basic'
+                label='Project Name'
+                variant='outlined'
+                name='projectName' // Add name attribute to identify the input in handleInputChange
+                value={projectFormData.projectName}
+                onChange={handleProjectInputChange}
+                required
+                className='border border-black rounded-md w-full'
+              />
+              <TextField
+                id='outlined-basic'
+                label='Project Number'
+                variant='outlined'
+                name='projectNumber' // Add name attribute to identify the input in handleInputChange
+                value={projectFormData.projectNumber}
+                onChange={handleProjectInputChange}
+                required
+                className='border border-black rounded-md w-full'
+              />
 
-              <button type='submit' className='border border-black rounded-lg'>
+              <button
+                type='submit'
+                className=' hover:scale-105 align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg bg-gray-900 text-white shadow-md shadow-gray-900/10 hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none'>
                 Add
               </button>
             </div>

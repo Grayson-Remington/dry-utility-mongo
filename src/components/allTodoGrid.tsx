@@ -3,7 +3,15 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { useConfirm } from "material-ui-confirm";
-import { Avatar } from "@mui/material";
+import {
+  Avatar,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+} from "@mui/material";
+import toast, { Toaster } from "react-hot-toast";
 export default function AllTodoGrid({ todos, setTodos, projects }: any) {
   const { data: session, status } = useSession();
   const confirm = useConfirm();
@@ -37,8 +45,10 @@ export default function AllTodoGrid({ todos, setTodos, projects }: any) {
             const data = await response.json();
             setTodos(todos!.filter((obj: any) => obj.id !== id));
             console.log(data); // Handle success
+            toast.success("Successfully deleted To do");
           } else {
             console.error("Failed to sign up");
+            toast.error("Unable to delete To do");
           }
         } catch (error) {
           console.error("An error occurred:", error);
@@ -89,7 +99,13 @@ export default function AllTodoGrid({ todos, setTodos, projects }: any) {
       headerName: "Project Number",
       width: 130,
     },
-    { field: "text", headerName: "Information", width: 300, flex: 1 },
+    {
+      field: "text",
+      headerName: "Tasks",
+      width: 300,
+      flex: 1,
+      minWidth: 180,
+    },
     {
       field: "todoClass",
       headerName: "Category",
@@ -177,8 +193,10 @@ export default function AllTodoGrid({ todos, setTodos, projects }: any) {
       if (response.ok) {
         const data = await response.json();
         console.log(data); // Handle success
+        toast.success("Successfully added Todo");
       } else {
         console.error("Failed to sign up");
+        toast.error("Unable to add Todo");
       }
     } catch (error) {
       console.error("An error occurred:", error);
@@ -189,7 +207,7 @@ export default function AllTodoGrid({ todos, setTodos, projects }: any) {
     date: "",
     text: "",
     todoClass: "Power",
-    projectNumber: projects[0].projectNumber,
+    projectNumber: "",
   });
 
   const handleTodoInputChange = (e: any) => {
@@ -198,6 +216,7 @@ export default function AllTodoGrid({ todos, setTodos, projects }: any) {
       ...prevData,
       [name]: value,
     }));
+    console.log(name, value, "testing");
   };
   const handleTodoSubmit = (e: any) => {
     e.preventDefault();
@@ -217,69 +236,98 @@ export default function AllTodoGrid({ todos, setTodos, projects }: any) {
   };
   return (
     <>
+      <div>
+        <Toaster />
+      </div>
       {status === "authenticated" && todos && (
-        <div className='max-w-4xl w-full bg-white rounded-lg p-1'>
+        <div className=' max-w-4xl w-full bg-white rounded-lg p-3'>
           <form onSubmit={handleTodoSubmit}>
-            <div className='w-full flex gap-2 py-1 border-b border-black'>
-              <div className='border-r h-full pr-1 border-black font-bold'>
+            <div className='p-3 w-full flex gap-2 py-1 border-black flex-col md:flex-row'>
+              <div className='w-full flex gap-2'>
                 <input
+                  className='max-w-48 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 focus:cursor-text block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
                   type='date'
                   name='date' // Add name attribute to identify the input in handleInputChange
                   value={todoFormData.date}
                   onChange={handleTodoInputChange}
                   required
                 />
+
+                <TextField
+                  type='text'
+                  name='text' // Add name attribute to identify the input in handleInputChange
+                  value={todoFormData.text}
+                  onChange={handleTodoInputChange}
+                  className='border border-black rounded-md w-full'
+                  required
+                  id='text'
+                  label='Task'
+                  variant='outlined'
+                  // Add name attribute to identify the input in handleInputChange
+                />
               </div>
-              <input
-                type='text'
-                name='text' // Add name attribute to identify the input in handleInputChange
-                value={todoFormData.text}
-                onChange={handleTodoInputChange}
-                className='border border-black rounded-md w-full'
-                required
-              />
-              <select
-                className={""}
-                value={todoFormData.projectNumber}
-                onChange={handleTodoInputChange}
-                id='projectNumber'
-                name='projectNumber'>
-                {projects.map((project: any) => (
-                  <option key={project.id} value={project.projectNumber}>
-                    {project.projectNumber}
-                  </option>
-                ))}
-              </select>
-              <select
-                className={`rounded-lg p-1 font-bold ${
-                  todoFormData.todoClass == "Power"
-                    ? "bg-red-500"
-                    : todoFormData.todoClass === "Gas"
-                    ? "bg-yellow-500"
-                    : todoFormData.todoClass === "Telco"
-                    ? "bg-orange-500"
-                    : "bg-purple-500"
-                }`}
-                value={todoFormData.todoClass}
-                onChange={handleTodoInputChange}
-                id='todoClass'
-                name='todoClass'>
-                <option className='bg-red-500' value='Power'>
-                  Power
-                </option>
-                <option className='bg-yellow-500' value='Gas'>
-                  Gas
-                </option>
-                <option className='bg-orange-500' value='Telco'>
-                  Telco
-                </option>
-                <option className='bg-purple-500' value='Misc'>
-                  Misc
-                </option>
-              </select>
-              <button type='submit' className='border border-black rounded-lg'>
-                Add
-              </button>
+              <div className='w-full flex gap-3'>
+                <FormControl fullWidth className=''>
+                  <InputLabel id='projectNumber-label'>
+                    Project Number
+                  </InputLabel>
+                  <Select
+                    labelId='projectNumber-label'
+                    value={todoFormData.projectNumber}
+                    onChange={handleTodoInputChange}
+                    id='projectNumber'
+                    name='projectNumber'
+                    label='Project Number'>
+                    {projects.map((project: any) => (
+                      <MenuItem key={project.id} value={project.projectNumber}>
+                        {project.projectNumber}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <FormControl fullWidth className='group'>
+                  <InputLabel id='todoClass-label'>Task Class</InputLabel>
+                  <Select
+                    labelId='todoClass-label'
+                    value={todoFormData.todoClass}
+                    onChange={handleTodoInputChange}
+                    id='todoClass'
+                    name='todoClass'
+                    label='To do Class'
+                    className=''>
+                    <MenuItem className='' value='Power'>
+                      <div className='flex justify-between items-center w-full'>
+                        <div>Power</div>
+                        <div className='rounded-full bg-red-500 h-4 w-4'></div>
+                      </div>
+                    </MenuItem>
+                    <MenuItem className='' value='Gas'>
+                      <div className='flex justify-between items-center w-full'>
+                        <div>Gas</div>
+                        <div className='rounded-full bg-yellow-500 h-4 w-4'></div>
+                      </div>
+                    </MenuItem>
+                    <MenuItem className='' value='Telco'>
+                      <div className='flex justify-between items-center w-full'>
+                        <div>Telco</div>
+                        <div className='rounded-full bg-orange-500 h-4 w-4'></div>
+                      </div>
+                    </MenuItem>
+                    <MenuItem className='' value='Misc'>
+                      <div className='flex justify-between items-center w-full'>
+                        <div>Misc</div>
+                        <div className='rounded-full bg-purple-500 h-4 w-4'></div>
+                      </div>
+                    </MenuItem>
+                  </Select>
+                </FormControl>
+
+                <button
+                  type='submit'
+                  className=' self-center max-w-xs hover:scale-105 align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-4 px-6 rounded-lg bg-gray-900 text-white shadow-md shadow-gray-900/10 hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none'>
+                  Add
+                </button>
+              </div>
             </div>
           </form>
           <div style={{ height: 450, width: "100%" }}>

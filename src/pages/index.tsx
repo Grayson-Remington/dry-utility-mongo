@@ -96,7 +96,7 @@ export default function Home() {
                   : "text-blue-600"
               }`}
               onClick={() => setSelectedGrid("Todos")}>
-              Todos
+              Tasks
             </button>
           </div>
           {selectedGrid === "Projects" && (

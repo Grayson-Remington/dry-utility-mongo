@@ -231,7 +231,7 @@ export default function ProjectPage({ projectNumber, projectId, role }: any) {
               : "text-blue-600"
           }`}
           onClick={() => setSelectedGrid("Tasks")}>
-          Tasks
+          Timeline
         </button>
         <button
           className={`p-2 border border-blue-600  ${
@@ -249,7 +249,7 @@ export default function ProjectPage({ projectNumber, projectId, role }: any) {
               : "text-blue-600"
           }`}
           onClick={() => setSelectedGrid("Todos")}>
-          Todos
+          To do
         </button>
         <button
           className={`p-2 border border-blue-600  ${
