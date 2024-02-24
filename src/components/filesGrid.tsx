@@ -114,7 +114,7 @@ export default function FilesGrid({ projectNumber, files, setFiles }: any) {
   return (
     <>
       {status === "authenticated" && files && (
-        <div className='max-w-4xl bg-white rounded-lg w-full p-1'>
+        <div className='max-w-4xl bg-white rounded-b-lg w-full p-1'>
           <Upload projectNumber={projectNumber} />
           <div style={{ height: 500, width: "100%" }}>
             {files && (

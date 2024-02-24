@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import * as React from "react";
 import Navbar from "@/components/navbar";
-import TaskGrid from "@/components/taskGrid";
+import TimelineGrid from "@/components/timelineGrid";
 import ContactsGrid from "@/components/contactsGrid";
 import { Button, ButtonGroup } from "@mui/material";
-import TodoGrid from "@/components/todoGrid";
+import TaskGrid from "@/components/taskGrid";
 import { useSession } from "next-auth/react";
 import Upload from "@/components/Upload";
 import MapComponent from "@/components/MapComponent";
@@ -13,6 +13,7 @@ import { ListObjectsV2Command, S3Client, _Object } from "@aws-sdk/client-s3";
 import jsCookies from "js-cookie";
 import serverCookies from "cookies";
 import UsersGrid from "@/components/usersGrid";
+
 export async function getServerSideProps(context: any) {
   let { projectName, projectNumber, projectId, role } = context.query;
   const cookies = new serverCookies(context.req, context.res);
@@ -230,70 +231,75 @@ export default function ProjectPage({
   return (
     <main className='w-full h-full min-h-screen flex flex-col items-center bg-blue-200 px-4'>
       <Navbar />
-      <h1 className='text-2xl underline py-2'>{projectName}</h1>
 
-      <div className=''>
-        <button
-          className={`p-2  border border-blue-600 rounded-l-md  ${
-            selectedGrid === "Tasks"
-              ? "bg-blue-800 text-white hover:bg-blue-800"
-              : "text-blue-600"
-          }`}
-          onClick={() => setSelectedGrid("Tasks")}>
-          Timeline
-        </button>
-        <button
-          className={`p-2 border border-blue-600  ${
-            selectedGrid === "Contacts"
-              ? "bg-blue-800 text-white hover:bg-blue-800"
-              : "text-blue-600"
-          }`}
-          onClick={() => setSelectedGrid("Contacts")}>
-          Contacts
-        </button>
-        <button
-          className={`p-2 border border-blue-600  ${
-            selectedGrid === "Todos"
-              ? "bg-blue-800 text-white hover:bg-blue-800"
-              : "text-blue-600"
-          }`}
-          onClick={() => setSelectedGrid("Todos")}>
-          To do
-        </button>
-        <button
-          className={`p-2 border border-blue-600  ${
-            selectedGrid === "Files"
-              ? "bg-blue-800 text-white hover:bg-blue-800"
-              : "text-blue-600"
-          }`}
-          onClick={() => setSelectedGrid("Files")}>
-          Files
-        </button>
-        {role == "admin" && (
+      <div className='flex flex-col sm:flex-row justify-center items-center'>
+        <div>
           <button
-            className={`p-2 border border-blue-600  ${
-              selectedGrid === "Users"
+            className={`p-2  border border-blue-600 rounded-l-md  ${
+              selectedGrid === "Timeline"
                 ? "bg-blue-800 text-white hover:bg-blue-800"
                 : "text-blue-600"
             }`}
-            onClick={() => setSelectedGrid("Users")}>
-            Users
+            onClick={() => setSelectedGrid("Timeline")}>
+            Timeline
           </button>
-        )}
+          <button
+            className={`p-2 border border-blue-600  ${
+              selectedGrid === "Contacts"
+                ? "bg-blue-800 text-white hover:bg-blue-800"
+                : "text-blue-600"
+            }`}
+            onClick={() => setSelectedGrid("Contacts")}>
+            Contacts
+          </button>
+          <button
+            className={`p-2 border border-blue-600 rounded-r-md sm:rounded-r-none  ${
+              selectedGrid === "Tasks"
+                ? "bg-blue-800 text-white hover:bg-blue-800"
+                : "text-blue-600"
+            }`}
+            onClick={() => setSelectedGrid("Tasks")}>
+            Tasks
+          </button>
+        </div>
+        <div>
+          <button
+            className={`p-2 border border-blue-600 rounded-l-md sm:rounded-none  ${
+              selectedGrid === "Files"
+                ? "bg-blue-800 text-white hover:bg-blue-800"
+                : "text-blue-600"
+            }`}
+            onClick={() => setSelectedGrid("Files")}>
+            Files
+          </button>
+          {role == "admin" && (
+            <button
+              className={`p-2 border border-blue-600  ${
+                selectedGrid === "Users"
+                  ? "bg-blue-800 text-white hover:bg-blue-800"
+                  : "text-blue-600"
+              }`}
+              onClick={() => setSelectedGrid("Users")}>
+              Users
+            </button>
+          )}
 
-        <button
-          className={`p-2 border border-blue-600 rounded-r-md  ${
-            selectedGrid === "Map"
-              ? "bg-blue-800 text-white hover:bg-blue-800"
-              : "text-blue-600"
-          }`}
-          onClick={() => setSelectedGrid("Map")}>
-          Map
-        </button>
+          <button
+            className={`p-2 border border-blue-600 rounded-r-md  ${
+              selectedGrid === "Map"
+                ? "bg-blue-800 text-white hover:bg-blue-800"
+                : "text-blue-600"
+            }`}
+            onClick={() => setSelectedGrid("Map")}>
+            Map
+          </button>
+        </div>
       </div>
-
-      {selectedGrid === "Tasks" && (
-        <TaskGrid
+      <div className='w-full max-w-4xl text-2xl p-1 text-center underline font-bold bg-white rounded-t-lg'>
+        {projectName}
+      </div>
+      {selectedGrid === "Timeline" && (
+        <TimelineGrid
           tasks={tasks}
           setTasks={setTasks}
           projectNumber={projectNumber}
@@ -306,8 +312,8 @@ export default function ProjectPage({
           projectNumber={projectNumber}
         />
       )}
-      {selectedGrid === "Todos" && (
-        <TodoGrid
+      {selectedGrid === "Tasks" && (
+        <TaskGrid
           todos={todos}
           setTodos={setTodos}
           projectNumber={projectNumber}

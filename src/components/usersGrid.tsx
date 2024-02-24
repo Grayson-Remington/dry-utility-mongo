@@ -158,7 +158,7 @@ export default function UsersGrid({ users, setUsers, projectNumber }: any) {
   return (
     <>
       {status === "authenticated" && users && (
-        <div className='max-w-4xl bg-white rounded-lg w-full p-1'>
+        <div className='max-w-4xl bg-white rounded-b-lg w-full p-1'>
           <form onSubmit={handleUserSubmit}>
             <div className='w-full flex gap-2 py-1 border-b border-black'>
               <div className='flex h-full w-full pr-1 border-black font-bold'>

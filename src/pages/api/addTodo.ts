@@ -7,7 +7,7 @@ export default async function handler(req: any, res: any) {
     const { author, projectNumber, date, text, todoClass, id } = req.body;
 
     const response = await db.collection("todos").updateOne(
-      { text: text }, // Query for finding an existing item with the same name
+      { id: id }, // Query for finding an existing item with the same name
       {
         $setOnInsert: {
           author: author,

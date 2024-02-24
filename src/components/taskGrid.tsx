@@ -3,8 +3,16 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { useConfirm } from "material-ui-confirm";
-import { Avatar } from "@mui/material";
-export default function TaskGrid({ tasks, setTasks, projectNumber }: any) {
+import {
+  Avatar,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+  Tooltip,
+} from "@mui/material";
+export default function TaskGrid({ todos, setTodos, projectNumber }: any) {
   const { data: session, status } = useSession();
   const confirm = useConfirm();
   function formatDate(inputDate: any) {
@@ -21,6 +29,33 @@ export default function TaskGrid({ tasks, setTasks, projectNumber }: any) {
 
     return formattedDate;
   }
+  const deleteTodo = async (id: any) => {
+    confirm({ description: "This action is permanent!" })
+      .then(async () => {
+        try {
+          const response = await fetch("/api/deleteTodo", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ id: id }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            setTodos(todos!.filter((obj: any) => obj.id !== id));
+            console.log(data); // Handle success
+          } else {
+            console.error("Failed to sign up");
+          }
+        } catch (error) {
+          console.error("An error occurred:", error);
+        }
+      })
+      .catch(() => {
+        /* ... */
+      });
+  };
   function stringToColor(string: string) {
     let hash = 0;
     let i;
@@ -60,19 +95,23 @@ export default function TaskGrid({ tasks, setTasks, projectNumber }: any) {
       field: "text",
       headerName: "Information",
       width: 300,
-      minWidth: 300,
       flex: 1,
+      renderCell: (params: any) => (
+        <Tooltip title={params.row.text}>
+          <span className='table-cell-trucate'>{params.row.text}</span>
+        </Tooltip>
+      ),
     },
     {
-      field: "taskClass",
+      field: "todoClass",
       headerName: "Category",
       width: 100,
       cellClassName: (params) =>
-        params.row.taskClass == "Power"
+        params.row.todoClass == "Power"
           ? "bg-red-500"
-          : params.row.taskClass == "Gas"
+          : params.row.todoClass == "Gas"
           ? "bg-yellow-300"
-          : params.row.taskClass == "Telco"
+          : params.row.todoClass == "Telco"
           ? "bg-orange-500"
           : "bg-purple-500",
       align: "center",
@@ -99,7 +138,7 @@ export default function TaskGrid({ tasks, setTasks, projectNumber }: any) {
       width: 70,
 
       renderCell: (params) => (
-        <button className='p-2' onClick={() => deleteTask(params.row.id)}>
+        <button className='p-2' onClick={() => deleteTodo(params.row.id)}>
           <FaRegTrashAlt />
         </button>
       ),
@@ -127,9 +166,10 @@ export default function TaskGrid({ tasks, setTasks, projectNumber }: any) {
   function getRowId(row: any) {
     return row.id;
   }
-  const addTask = async (newItem: any) => {
+
+  const addTodo = async (newItem: any) => {
     try {
-      const response = await fetch("/api/addTask", {
+      const response = await fetch("/api/addTodo", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -137,7 +177,7 @@ export default function TaskGrid({ tasks, setTasks, projectNumber }: any) {
         body: JSON.stringify({
           author: session?.user?.name,
           projectNumber: projectNumber,
-          taskClass: newItem.taskClass,
+          todoClass: newItem.todoClass,
           date: newItem.date,
           text: newItem.text,
           id: newItem.id,
@@ -154,121 +194,177 @@ export default function TaskGrid({ tasks, setTasks, projectNumber }: any) {
       console.error("An error occurred:", error);
     }
   };
-  const deleteTask = async (id: any) => {
-    confirm({ description: "This action is permanent!" })
-      .then(async () => {
-        try {
-          const response = await fetch("/api/deleteTask", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ id: id }),
-          });
 
-          if (response.ok) {
-            const data = await response.json();
-            setTasks(tasks!.filter((obj: any) => obj.id !== id));
-            console.log(data); // Handle success
-          } else {
-            console.error("Failed to sign up");
-          }
-        } catch (error) {
-          console.error("An error occurred:", error);
-        }
-      })
-      .catch(() => {
-        /* ... */
-      });
-  };
-  const [taskFormData, setTaskFormData] = useState({
+  const [todoFormData, setTodoFormData] = useState({
     date: "",
     text: "",
-    taskClass: "Power",
+    todoClass: "Power",
   });
 
-  const handleTaskInputChange = (e: any) => {
+  const handleTodoInputChange = (e: any) => {
     const { name, value } = e.target;
-    setTaskFormData((prevData) => ({
+    setTodoFormData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
   };
-  const handleTaskSubmit = (e: any) => {
+  const handleTodoSubmit = (e: any) => {
     e.preventDefault();
     // You can now access the formData object and perform any actions (e.g., send data to the server)
-    console.log("Form submitted:", taskFormData);
+    console.log("Form submitted:", todoFormData);
     const newItem = {
       author: session?.user?.name,
       projectNumber: projectNumber,
-      taskClass: taskFormData.taskClass,
-      date: taskFormData.date,
-      text: taskFormData.text,
+      todoClass: todoFormData.todoClass,
+      date: todoFormData.date,
+      text: todoFormData.text,
       id: Math.floor(Math.random() * 1000000000),
     };
-    addTask(newItem);
+    addTodo(newItem);
     // Update the state by creating a new array with the new item
-    setTasks((prevData: any) => [...prevData, newItem]);
+    setTodos((prevData: any) => [...prevData, newItem]);
   };
   return (
     <>
-      {status === "authenticated" && tasks && (
-        <div className='max-w-4xl w-full bg-white rounded-lg p-1'>
-          <form onSubmit={handleTaskSubmit}>
-            <div className='w-full flex gap-2 py-1 border-b border-black'>
-              <div className='border-r h-full pr-1 border-black font-bold'>
-                <input
-                  type='date'
-                  name='date' // Add name attribute to identify the input in handleInputChange
-                  value={taskFormData.date}
-                  onChange={handleTaskInputChange}
-                  required
-                />
-              </div>
+      {status === "authenticated" && todos && (
+        <div className=' max-w-4xl w-full bg-white rounded-b-lg p-1'>
+          <form onSubmit={handleTodoSubmit}>
+            <div className='hidden p-3 w-full sm:flex gap-3 py-1 border-black sm:flex-row'>
               <input
-                type='text'
-                name='text' // Add name attribute to identify the input in handleInputChange
-                value={taskFormData.text}
-                onChange={handleTaskInputChange}
-                className='border border-black rounded-md w-full'
+                className='max-w-48 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 focus:cursor-text block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
+                type='date'
+                name='date' // Add name attribute to identify the input in handleInputChange
+                value={todoFormData.date}
+                onChange={handleTodoInputChange}
                 required
               />
-              <select
-                className={`rounded-lg p-1 font-bold ${
-                  taskFormData.taskClass == "Power"
-                    ? "bg-red-500"
-                    : taskFormData.taskClass === "Gas"
-                    ? "bg-yellow-500"
-                    : taskFormData.taskClass === "Telco"
-                    ? "bg-orange-500"
-                    : "bg-purple-500"
-                }`}
-                value={taskFormData.taskClass}
-                onChange={handleTaskInputChange}
-                id='taskClass'
-                name='taskClass'>
-                <option className='bg-red-500' value='Power'>
-                  Power
-                </option>
-                <option className='bg-yellow-500' value='Gas'>
-                  Gas
-                </option>
-                <option className='bg-orange-500' value='Telco'>
-                  Telco
-                </option>
-                <option className='bg-purple-500' value='Misc'>
-                  Misc
-                </option>
-              </select>
-              <button type='submit' className='border border-black rounded-lg'>
+              <TextField
+                type='text'
+                name='text' // Add name attribute to identify the input in handleInputChange
+                value={todoFormData.text}
+                onChange={handleTodoInputChange}
+                className='border border-black rounded-md w-full'
+                required
+                id='text'
+                label='Task'
+                variant='outlined'
+                // Add name attribute to identify the input in handleInputChange
+              />
+
+              <FormControl fullWidth className='group max-w-48'>
+                <InputLabel id='todoClass-label'>Task Class</InputLabel>
+                <Select
+                  labelId='todoClass-label'
+                  value={todoFormData.todoClass}
+                  onChange={handleTodoInputChange}
+                  id='todoClass'
+                  name='todoClass'
+                  label='To do Class'
+                  className=''>
+                  <MenuItem className='' value='Power'>
+                    <div className='flex justify-between items-center w-full'>
+                      <div>Power</div>
+                      <div className='rounded-full bg-red-500 h-4 w-4'></div>
+                    </div>
+                  </MenuItem>
+                  <MenuItem className='' value='Gas'>
+                    <div className='flex justify-between items-center w-full'>
+                      <div>Gas</div>
+                      <div className='rounded-full bg-yellow-500 h-4 w-4'></div>
+                    </div>
+                  </MenuItem>
+                  <MenuItem className='' value='Telco'>
+                    <div className='flex justify-between items-center w-full'>
+                      <div>Telco</div>
+                      <div className='rounded-full bg-orange-500 h-4 w-4'></div>
+                    </div>
+                  </MenuItem>
+                  <MenuItem className='' value='Misc'>
+                    <div className='flex justify-between items-center w-full'>
+                      <div>Misc</div>
+                      <div className='rounded-full bg-purple-500 h-4 w-4'></div>
+                    </div>
+                  </MenuItem>
+                </Select>
+              </FormControl>
+
+              <button
+                type='submit'
+                className=' self-center max-w-xs hover:scale-105 align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-4 px-6 rounded-lg bg-gray-900 text-white shadow-md shadow-gray-900/10 hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none'>
                 Add
               </button>
+            </div>
+            <div className='sm:hidden p-3 w-full flex flex-col gap-3 py-1 border-black sm:flex-row'>
+              <TextField
+                type='text'
+                name='text' // Add name attribute to identify the input in handleInputChange
+                value={todoFormData.text}
+                onChange={handleTodoInputChange}
+                className='border border-black rounded-md w-full'
+                required
+                id='text'
+                label='Task'
+                variant='outlined'
+                // Add name attribute to identify the input in handleInputChange
+              />
+              <div className='flex justify-between'>
+                <input
+                  className='max-w-48 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 focus:cursor-text block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
+                  type='date'
+                  name='date' // Add name attribute to identify the input in handleInputChange
+                  value={todoFormData.date}
+                  onChange={handleTodoInputChange}
+                  required
+                />
+                <FormControl fullWidth className='group max-w-48'>
+                  <InputLabel id='todoClass-label'>Task Class</InputLabel>
+                  <Select
+                    labelId='todoClass-label'
+                    value={todoFormData.todoClass}
+                    onChange={handleTodoInputChange}
+                    id='todoClass'
+                    name='todoClass'
+                    label='To do Class'
+                    className=''>
+                    <MenuItem className='' value='Power'>
+                      <div className='flex justify-between items-center w-full'>
+                        <div>Power</div>
+                        <div className='rounded-full bg-red-500 h-4 w-4'></div>
+                      </div>
+                    </MenuItem>
+                    <MenuItem className='' value='Gas'>
+                      <div className='flex justify-between items-center w-full'>
+                        <div>Gas</div>
+                        <div className='rounded-full bg-yellow-500 h-4 w-4'></div>
+                      </div>
+                    </MenuItem>
+                    <MenuItem className='' value='Telco'>
+                      <div className='flex justify-between items-center w-full'>
+                        <div>Telco</div>
+                        <div className='rounded-full bg-orange-500 h-4 w-4'></div>
+                      </div>
+                    </MenuItem>
+                    <MenuItem className='' value='Misc'>
+                      <div className='flex justify-between items-center w-full'>
+                        <div>Misc</div>
+                        <div className='rounded-full bg-purple-500 h-4 w-4'></div>
+                      </div>
+                    </MenuItem>
+                  </Select>
+                </FormControl>
+
+                <button
+                  type='submit'
+                  className=' self-center max-w-xs hover:scale-105 align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-4 px-6 rounded-lg bg-gray-900 text-white shadow-md shadow-gray-900/10 hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none'>
+                  Add
+                </button>
+              </div>
             </div>
           </form>
           <div style={{ height: 450, width: "100%" }}>
             <DataGrid
               getRowId={getRowId}
-              rows={tasks}
+              rows={todos}
               columns={columns}
               initialState={{
                 pagination: {

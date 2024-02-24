@@ -53,7 +53,7 @@ export default function Upload(data: any) {
   };
 
   return (
-    <div className='bg-white w-full p-1 flex justify-around rounded-t-lg'>
+    <div className='bg-white w-full p-1 flex justify-around'>
       <input
         type='file'
         accept='.kmz, application/vnd.google-earth.kmz, .kml, application/vnd.google-earth.kml, .doc, .docx, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, .pdf, application/pdf'

@@ -155,7 +155,7 @@ export default function ContactsGrid({
   return (
     <>
       {status === "authenticated" && contacts && (
-        <div className='max-w-4xl w-full bg-white rounded-lg p-1'>
+        <div className='max-w-4xl w-full bg-white rounded-b-lg p-1'>
           <form onSubmit={handleContactSubmit}>
             <div className='w-full flex items-center gap-2 py-1 border-b border-black'>
               <div className='border-r h-full pr-1 border-black font-bold'>

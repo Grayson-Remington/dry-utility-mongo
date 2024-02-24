@@ -286,7 +286,7 @@ export default function AllTodoGrid({ todos, setTodos, projects }: any) {
                     ))}
                   </Select>
                 </FormControl>
-                <FormControl fullWidth className='group'>
+                <FormControl fullWidth className='group w-44 '>
                   <InputLabel id='todoClass-label'>Task Class</InputLabel>
                   <Select
                     labelId='todoClass-label'

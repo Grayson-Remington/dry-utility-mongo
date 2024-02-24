@@ -8,7 +8,7 @@ import { useSession, signOut } from "next-auth/react";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { Button, ButtonGroup } from "@mui/material";
 import ProjectsGrid from "@/components/projectsGrid";
-import TodoGrid from "@/components/todoGrid";
+import TodoGrid from "@/components/taskGrid";
 import AllTodoGrid from "@/components/allTodoGrid";
 const inter = Inter({ subsets: ["latin"] });
 
