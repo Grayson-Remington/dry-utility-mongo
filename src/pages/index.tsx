@@ -43,7 +43,7 @@ export default function Home() {
   };
 
   useEffect(() => {
-    if (!session) return;
+    if (!session) return setLoading(false);
 
     getProjects();
   }, [session]);
