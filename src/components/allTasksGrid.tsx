@@ -12,7 +12,7 @@ import {
   TextField,
 } from "@mui/material";
 import toast, { Toaster } from "react-hot-toast";
-export default function AllTodoGrid({ todos, setTodos, projects }: any) {
+export default function AllTasksGrid({ tasks, setTasks, projects }: any) {
   const { data: session, status } = useSession();
   const confirm = useConfirm();
   function formatDate(inputDate: any) {
@@ -29,11 +29,11 @@ export default function AllTodoGrid({ todos, setTodos, projects }: any) {
 
     return formattedDate;
   }
-  const deleteTodo = async (id: any) => {
+  const deleteTask = async (id: any) => {
     confirm({ description: "This action is permanent!" })
       .then(async () => {
         try {
-          const response = await fetch("/api/deleteTodo", {
+          const response = await fetch("/api/deleteTask", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -43,7 +43,7 @@ export default function AllTodoGrid({ todos, setTodos, projects }: any) {
 
           if (response.ok) {
             const data = await response.json();
-            setTodos(todos!.filter((obj: any) => obj.id !== id));
+            setTasks(tasks!.filter((obj: any) => obj.id !== id));
             console.log(data); // Handle success
             toast.success("Successfully deleted To do");
           } else {
@@ -95,7 +95,7 @@ export default function AllTodoGrid({ todos, setTodos, projects }: any) {
     },
 
     {
-      field: "projectNumber",
+      field: "projectName",
       headerName: "Project Number",
       width: 130,
     },
@@ -107,15 +107,15 @@ export default function AllTodoGrid({ todos, setTodos, projects }: any) {
       minWidth: 180,
     },
     {
-      field: "todoClass",
+      field: "taskClass",
       headerName: "Category",
       width: 100,
       cellClassName: (params) =>
-        params.row.todoClass == "Power"
+        params.row.taskClass == "Power"
           ? "bg-red-500"
-          : params.row.todoClass == "Gas"
+          : params.row.taskClass == "Gas"
           ? "bg-yellow-300"
-          : params.row.todoClass == "Telco"
+          : params.row.taskClass == "Telco"
           ? "bg-orange-500"
           : "bg-purple-500",
       align: "center",
@@ -142,7 +142,7 @@ export default function AllTodoGrid({ todos, setTodos, projects }: any) {
       width: 80,
 
       renderCell: (params) => (
-        <button className='p-2' onClick={() => deleteTodo(params.row.id)}>
+        <button className='p-2' onClick={() => deleteTask(params.row.id)}>
           <FaRegTrashAlt />
         </button>
       ),
@@ -173,17 +173,18 @@ export default function AllTodoGrid({ todos, setTodos, projects }: any) {
     return row.id;
   }
 
-  const addTodo = async (newItem: any) => {
+  const addTask = async (newItem: any) => {
     try {
-      const response = await fetch("/api/addTodo", {
+      const response = await fetch("/api/addTask", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           author: session?.user?.name,
-          projectNumber: newItem.projectNumber,
-          todoClass: newItem.todoClass,
+          projectId: newItem.projectId,
+          projectName: newItem.projectName,
+          taskClass: newItem.taskClass,
           date: newItem.date,
           text: newItem.text,
           id: newItem.id,
@@ -193,71 +194,86 @@ export default function AllTodoGrid({ todos, setTodos, projects }: any) {
       if (response.ok) {
         const data = await response.json();
         console.log(data); // Handle success
-        toast.success("Successfully added Todo");
+        toast.success("Successfully added Task");
       } else {
         console.error("Failed to sign up");
-        toast.error("Unable to add Todo");
+        toast.error("Unable to add Task");
       }
     } catch (error) {
       console.error("An error occurred:", error);
     }
   };
 
-  const [todoFormData, setTodoFormData] = useState({
+  const [taskFormData, setTaskFormData] = useState({
     date: "",
     text: "",
-    todoClass: "Power",
-    projectNumber: "",
+    taskClass: "Power",
+    projectId: "",
+    projectName: "",
   });
 
-  const handleTodoInputChange = (e: any) => {
+  const handleTaskInputChange = (e: any) => {
     const { name, value } = e.target;
-    setTodoFormData((prevData) => ({
+    setTaskFormData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
     console.log(name, value, "testing");
   };
-  const handleTodoSubmit = (e: any) => {
+  const handleProjectNameInputChange = (e: any) => {
+    const selectedProjectString = e.target.value;
+    const projectObject = JSON.parse(selectedProjectString);
+    console.log(selectedProjectString, projectObject);
+    setTaskFormData((prevData) => ({
+      ...prevData,
+      projectName: projectObject.projectName,
+      projectId: projectObject.projectId,
+    }));
+    console.log(taskFormData);
+  };
+  const handleTaskSubmit = (e: any) => {
     e.preventDefault();
     // You can now access the formData object and perform any actions (e.g., send data to the server)
-    console.log("Form submitted:", todoFormData);
+    console.log("Form submitted:", taskFormData);
     const newItem = {
       author: session?.user?.name,
-      projectNumber: todoFormData.projectNumber,
-      todoClass: todoFormData.todoClass,
-      date: todoFormData.date,
-      text: todoFormData.text,
+
+      projectId: taskFormData.projectId,
+      projectName: taskFormData.projectName,
+      taskClass: taskFormData.taskClass,
+      date: taskFormData.date,
+      text: taskFormData.text,
       id: Math.floor(Math.random() * 1000000000),
     };
-    addTodo(newItem);
+    addTask(newItem);
     // Update the state by creating a new array with the new item
-    setTodos((prevData: any) => [...prevData, newItem]);
+    setTasks((prevData: any) => [...prevData, newItem]);
   };
+  console.log(tasks);
   return (
     <>
       <div>
         <Toaster />
       </div>
-      {status === "authenticated" && todos && (
+      {status === "authenticated" && tasks && (
         <div className=' max-w-4xl w-full bg-white rounded-lg p-3'>
-          <form onSubmit={handleTodoSubmit}>
+          <form onSubmit={handleTaskSubmit}>
             <div className='p-3 w-full flex gap-2 py-1 border-black flex-col md:flex-row'>
               <div className='w-full flex gap-2'>
                 <input
                   className='max-w-48 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 focus:cursor-text block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
                   type='date'
                   name='date' // Add name attribute to identify the input in handleInputChange
-                  value={todoFormData.date}
-                  onChange={handleTodoInputChange}
+                  value={taskFormData.date}
+                  onChange={handleTaskInputChange}
                   required
                 />
 
                 <TextField
                   type='text'
                   name='text' // Add name attribute to identify the input in handleInputChange
-                  value={todoFormData.text}
-                  onChange={handleTodoInputChange}
+                  value={taskFormData.text}
+                  onChange={handleTaskInputChange}
                   className='border border-black rounded-md w-full'
                   required
                   id='text'
@@ -274,26 +290,34 @@ export default function AllTodoGrid({ todos, setTodos, projects }: any) {
                   <Select
                     required
                     labelId='projectNumber-label'
-                    value={todoFormData.projectNumber}
-                    onChange={handleTodoInputChange}
-                    id='projectNumber'
-                    name='projectNumber'
+                    value={JSON.stringify({
+                      projectId: taskFormData.projectId,
+                      projectName: taskFormData.projectName,
+                    })}
+                    onChange={handleProjectNameInputChange}
+                    id='projectId'
+                    name='projectId'
                     label='Project Number'>
                     {projects.map((project: any) => (
-                      <MenuItem key={project.id} value={project.projectNumber}>
-                        {project.projectNumber}
+                      <MenuItem
+                        key={project.id}
+                        value={JSON.stringify({
+                          projectId: project.id.toString(),
+                          projectName: project.projectName,
+                        })}>
+                        {project.projectName}
                       </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
                 <FormControl fullWidth className='group w-44 '>
-                  <InputLabel id='todoClass-label'>Task Class</InputLabel>
+                  <InputLabel id='taskClass-label'>Task Class</InputLabel>
                   <Select
-                    labelId='todoClass-label'
-                    value={todoFormData.todoClass}
-                    onChange={handleTodoInputChange}
-                    id='todoClass'
-                    name='todoClass'
+                    labelId='taskClass-label'
+                    value={taskFormData.taskClass}
+                    onChange={handleTaskInputChange}
+                    id='taskClass'
+                    name='taskClass'
                     label='To do Class'
                     className=''>
                     <MenuItem className='' value='Power'>
@@ -334,7 +358,7 @@ export default function AllTodoGrid({ todos, setTodos, projects }: any) {
           <div style={{ height: 450, width: "100%" }}>
             <DataGrid
               getRowId={getRowId}
-              rows={todos}
+              rows={tasks}
               columns={columns}
               initialState={{
                 pagination: {

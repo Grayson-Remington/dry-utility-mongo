@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { loadModules } from "esri-loader";
 import Upload from "./Upload";
 
-const MapComponent = ({ projectNumber, files }: any) => {
+const MapComponent = ({ projectId, projectName, files }: any) => {
   function replaceSpacesWithPluses(inputString: any) {
     // Use the replace method with a regular expression to replace all spaces with pluses
     return inputString.replace(/ /g, "+");
@@ -13,7 +13,7 @@ const MapComponent = ({ projectNumber, files }: any) => {
     var replacedString = inputString.replace(/ /g, "+");
     return replacedString;
   }
-  let updatedProjectNumber = replaceSpacesWithPluses(projectNumber);
+  let updatedProjectName = replaceSpacesWithPluses(projectName);
   function findFirstKmzFile(files: any) {
     for (const file of files) {
       if (file.Key.includes(".kmz")) {
@@ -77,11 +77,11 @@ const MapComponent = ({ projectNumber, files }: any) => {
         }
       )
       .catch((err) => {});
-  }, [updatedProjectNumber]);
+  }, [updatedProjectName]);
 
   return (
     <div className='w-full max-w-4xl rounded-b-lg'>
-      <Upload projectNumber={projectNumber} />
+      <Upload projectId={projectId} />
       <div id='viewDiv' className='h-[450px] w-full rounded-b-lg' />
     </div>
   );

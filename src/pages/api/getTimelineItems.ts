@@ -5,18 +5,18 @@ export default async function handler(req: any, res: any) {
     const client = await clientPromise;
     const db = client.db("dryUdb");
 
-    const { projectNumber } = req.body;
+    const { projectId } = req.body;
 
-    if (!projectNumber) {
-      return res.status(400).json({ error: "Missing projectNumber parameter" });
+    if (!projectId) {
+      return res.status(400).json({ error: "Missing projectId parameter" });
     }
 
-    const tasks = await db
-      .collection("todos")
-      .find({ projectNumber: projectNumber })
+    const timelineItems = await db
+      .collection("timelineItems")
+      .find({ projectId: projectId })
       .toArray();
 
-    res.status(200).json(tasks);
+    res.status(200).json(timelineItems);
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "Internal server error" });

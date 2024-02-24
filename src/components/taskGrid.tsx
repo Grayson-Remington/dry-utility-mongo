@@ -12,7 +12,12 @@ import {
   TextField,
   Tooltip,
 } from "@mui/material";
-export default function TaskGrid({ todos, setTodos, projectNumber }: any) {
+export default function TaskGrid({
+  tasks,
+  setTasks,
+  projectName,
+  projectId,
+}: any) {
   const { data: session, status } = useSession();
   const confirm = useConfirm();
   function formatDate(inputDate: any) {
@@ -29,11 +34,11 @@ export default function TaskGrid({ todos, setTodos, projectNumber }: any) {
 
     return formattedDate;
   }
-  const deleteTodo = async (id: any) => {
+  const deleteTask = async (id: any) => {
     confirm({ description: "This action is permanent!" })
       .then(async () => {
         try {
-          const response = await fetch("/api/deleteTodo", {
+          const response = await fetch("/api/deleteTask", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -43,7 +48,7 @@ export default function TaskGrid({ todos, setTodos, projectNumber }: any) {
 
           if (response.ok) {
             const data = await response.json();
-            setTodos(todos!.filter((obj: any) => obj.id !== id));
+            setTasks(tasks!.filter((obj: any) => obj.id !== id));
             console.log(data); // Handle success
           } else {
             console.error("Failed to sign up");
@@ -103,15 +108,15 @@ export default function TaskGrid({ todos, setTodos, projectNumber }: any) {
       ),
     },
     {
-      field: "todoClass",
+      field: "taskClass",
       headerName: "Category",
       width: 100,
       cellClassName: (params) =>
-        params.row.todoClass == "Power"
+        params.row.taskClass == "Power"
           ? "bg-red-500"
-          : params.row.todoClass == "Gas"
+          : params.row.taskClass == "Gas"
           ? "bg-yellow-300"
-          : params.row.todoClass == "Telco"
+          : params.row.taskClass == "Telco"
           ? "bg-orange-500"
           : "bg-purple-500",
       align: "center",
@@ -138,7 +143,7 @@ export default function TaskGrid({ todos, setTodos, projectNumber }: any) {
       width: 70,
 
       renderCell: (params) => (
-        <button className='p-2' onClick={() => deleteTodo(params.row.id)}>
+        <button className='p-2' onClick={() => deleteTask(params.row.id)}>
           <FaRegTrashAlt />
         </button>
       ),
@@ -167,17 +172,18 @@ export default function TaskGrid({ todos, setTodos, projectNumber }: any) {
     return row.id;
   }
 
-  const addTodo = async (newItem: any) => {
+  const addTask = async (newItem: any) => {
     try {
-      const response = await fetch("/api/addTodo", {
+      const response = await fetch("/api/addTask", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           author: session?.user?.name,
-          projectNumber: projectNumber,
-          todoClass: newItem.todoClass,
+          projectName: projectName,
+          projectId: projectId,
+          taskClass: newItem.taskClass,
           date: newItem.date,
           text: newItem.text,
           id: newItem.id,
@@ -195,54 +201,54 @@ export default function TaskGrid({ todos, setTodos, projectNumber }: any) {
     }
   };
 
-  const [todoFormData, setTodoFormData] = useState({
+  const [taskFormData, setTaskFormData] = useState({
     date: "",
     text: "",
-    todoClass: "Power",
+    taskClass: "Power",
   });
 
-  const handleTodoInputChange = (e: any) => {
+  const handleTaskInputChange = (e: any) => {
     const { name, value } = e.target;
-    setTodoFormData((prevData) => ({
+    setTaskFormData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
   };
-  const handleTodoSubmit = (e: any) => {
+  const handleTaskSubmit = (e: any) => {
     e.preventDefault();
     // You can now access the formData object and perform any actions (e.g., send data to the server)
-    console.log("Form submitted:", todoFormData);
+    console.log("Form submitted:", taskFormData);
     const newItem = {
       author: session?.user?.name,
-      projectNumber: projectNumber,
-      todoClass: todoFormData.todoClass,
-      date: todoFormData.date,
-      text: todoFormData.text,
+
+      taskClass: taskFormData.taskClass,
+      date: taskFormData.date,
+      text: taskFormData.text,
       id: Math.floor(Math.random() * 1000000000),
     };
-    addTodo(newItem);
+    addTask(newItem);
     // Update the state by creating a new array with the new item
-    setTodos((prevData: any) => [...prevData, newItem]);
+    setTasks((prevData: any) => [...prevData, newItem]);
   };
   return (
     <>
-      {status === "authenticated" && todos && (
+      {status === "authenticated" && tasks && (
         <div className=' max-w-4xl w-full bg-white rounded-b-lg p-1'>
-          <form onSubmit={handleTodoSubmit}>
+          <form onSubmit={handleTaskSubmit}>
             <div className='hidden p-3 w-full sm:flex gap-3 py-1 border-black sm:flex-row'>
               <input
                 className='max-w-48 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 focus:cursor-text block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
                 type='date'
                 name='date' // Add name attribute to identify the input in handleInputChange
-                value={todoFormData.date}
-                onChange={handleTodoInputChange}
+                value={taskFormData.date}
+                onChange={handleTaskInputChange}
                 required
               />
               <TextField
                 type='text'
                 name='text' // Add name attribute to identify the input in handleInputChange
-                value={todoFormData.text}
-                onChange={handleTodoInputChange}
+                value={taskFormData.text}
+                onChange={handleTaskInputChange}
                 className='border border-black rounded-md w-full'
                 required
                 id='text'
@@ -252,14 +258,14 @@ export default function TaskGrid({ todos, setTodos, projectNumber }: any) {
               />
 
               <FormControl fullWidth className='group max-w-48'>
-                <InputLabel id='todoClass-label'>Task Class</InputLabel>
+                <InputLabel id='taskClass-label'>Task Class</InputLabel>
                 <Select
-                  labelId='todoClass-label'
-                  value={todoFormData.todoClass}
-                  onChange={handleTodoInputChange}
-                  id='todoClass'
-                  name='todoClass'
-                  label='To do Class'
+                  labelId='taskClass-label'
+                  value={taskFormData.taskClass}
+                  onChange={handleTaskInputChange}
+                  id='taskClass'
+                  name='taskClass'
+                  label='Task Class'
                   className=''>
                   <MenuItem className='' value='Power'>
                     <div className='flex justify-between items-center w-full'>
@@ -298,8 +304,8 @@ export default function TaskGrid({ todos, setTodos, projectNumber }: any) {
               <TextField
                 type='text'
                 name='text' // Add name attribute to identify the input in handleInputChange
-                value={todoFormData.text}
-                onChange={handleTodoInputChange}
+                value={taskFormData.text}
+                onChange={handleTaskInputChange}
                 className='border border-black rounded-md w-full'
                 required
                 id='text'
@@ -312,18 +318,18 @@ export default function TaskGrid({ todos, setTodos, projectNumber }: any) {
                   className='max-w-48 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 focus:cursor-text block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
                   type='date'
                   name='date' // Add name attribute to identify the input in handleInputChange
-                  value={todoFormData.date}
-                  onChange={handleTodoInputChange}
+                  value={taskFormData.date}
+                  onChange={handleTaskInputChange}
                   required
                 />
                 <FormControl fullWidth className='group max-w-48'>
-                  <InputLabel id='todoClass-label'>Task Class</InputLabel>
+                  <InputLabel id='taskClass-label'>Task Class</InputLabel>
                   <Select
-                    labelId='todoClass-label'
-                    value={todoFormData.todoClass}
-                    onChange={handleTodoInputChange}
-                    id='todoClass'
-                    name='todoClass'
+                    labelId='taskClass-label'
+                    value={taskFormData.taskClass}
+                    onChange={handleTaskInputChange}
+                    id='taskClass'
+                    name='taskClass'
                     label='To do Class'
                     className=''>
                     <MenuItem className='' value='Power'>
@@ -364,7 +370,7 @@ export default function TaskGrid({ todos, setTodos, projectNumber }: any) {
           <div style={{ height: 450, width: "100%" }}>
             <DataGrid
               getRowId={getRowId}
-              rows={todos}
+              rows={tasks}
               columns={columns}
               initialState={{
                 pagination: {

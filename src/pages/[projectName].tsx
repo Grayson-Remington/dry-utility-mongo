@@ -48,9 +48,9 @@ export default function ProjectPage({
   projectId,
   role,
 }: any) {
-  const [tasks, setTasks] = useState<any[] | undefined>();
+  const [timelineItems, setTimelineItems] = useState<any[] | undefined>();
   const [contacts, setContacts] = useState<any[] | undefined>();
-  const [todos, setTodos] = useState<any[] | undefined>();
+  const [tasks, setTasks] = useState<any[] | undefined>();
   const [users, setUsers] = useState<any[] | undefined>();
   const [files, setFiles] = useState<_Object[]>();
   const [selectedGrid, setSelectedGrid] = useState<string>("Tasks");
@@ -71,12 +71,12 @@ export default function ProjectPage({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ projectNumber: projectNumber }),
+        body: JSON.stringify({ projectId: projectId }),
       });
 
       if (response.ok) {
         const data = await response.json();
-        setUsers(data);
+        setUsers(data[0].users);
         console.log(role, "role");
 
         console.log(data, "users"); // Handle success
@@ -87,19 +87,19 @@ export default function ProjectPage({
       console.error("An error occurred:", error);
     }
   };
-  const getTasks = async () => {
+  const getTimelineItems = async () => {
     try {
-      const response = await fetch("/api/getTasks", {
+      const response = await fetch("/api/getTimelineItems", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ projectNumber: projectNumber }),
+        body: JSON.stringify({ projectId: projectId }),
       });
 
       if (response.ok) {
         const data = await response.json();
-        setTasks(data);
+        setTimelineItems(data);
         console.log(data); // Handle success
       } else {
         console.error("Failed to sign up");
@@ -115,7 +115,7 @@ export default function ProjectPage({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ projectNumber: projectNumber }),
+        body: JSON.stringify({ projectId: projectId }),
       });
 
       if (response.ok) {
@@ -129,19 +129,19 @@ export default function ProjectPage({
       console.error("An error occurred:", error);
     }
   };
-  const getTodos = async () => {
+  const getTasks = async () => {
     try {
-      const response = await fetch("/api/getTodos", {
+      const response = await fetch("/api/getTasks", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ projectNumber: projectNumber }),
+        body: JSON.stringify({ projectId: projectId }),
       });
 
       if (response.ok) {
         const data = await response.json();
-        setTodos(data);
+        setTasks(data);
         console.log(data); // Handle success
       } else {
         console.error("Failed to sign up");
@@ -165,7 +165,7 @@ export default function ProjectPage({
     });
     const command = new ListObjectsV2Command({
       Bucket: process.env.NEXT_PUBLIC_S3_BUCKET_NAME,
-      Prefix: projectNumber,
+      Prefix: projectName + "-" + projectId,
     });
 
     try {
@@ -217,12 +217,14 @@ export default function ProjectPage({
   }
 
   useEffect(() => {
+    if (!projectId) return;
+    console.log(projectId, "projectId");
     getUsers();
     getTasks();
     getContacts();
-    getTodos();
+    getTimelineItems();
     fetchFiles();
-  }, []);
+  }, [projectId]);
 
   const [emailFormData, setEmailFormData] = useState({
     email: null,
@@ -300,41 +302,43 @@ export default function ProjectPage({
       </div>
       {selectedGrid === "Timeline" && (
         <TimelineGrid
-          tasks={tasks}
-          setTasks={setTasks}
-          projectNumber={projectNumber}
+          timelineItems={timelineItems}
+          setTimelineItems={setTimelineItems}
+          projectId={projectId}
         />
       )}
       {selectedGrid === "Contacts" && (
         <ContactsGrid
           contacts={contacts}
           setContacts={setContacts}
-          projectNumber={projectNumber}
+          projectId={projectId}
         />
       )}
       {selectedGrid === "Tasks" && (
         <TaskGrid
-          todos={todos}
-          setTodos={setTodos}
-          projectNumber={projectNumber}
+          tasks={tasks}
+          setTasks={setTasks}
+          projectName={projectName}
+          projectId={projectId}
         />
       )}
       {selectedGrid === "Files" && (
         <FilesGrid
-          projectNumber={projectNumber}
+          projectId={projectId}
+          projectName={projectName}
           files={files}
           setFiles={setFiles}
         />
       )}
       {role && role == "admin" && selectedGrid === "Users" && (
-        <UsersGrid
-          projectNumber={projectNumber}
-          users={users}
-          setUsers={setUsers}
-        />
+        <UsersGrid projectId={projectId} users={users} setUsers={setUsers} />
       )}
       {selectedGrid === "Map" && (
-        <MapComponent projectNumber={projectNumber} files={files} />
+        <MapComponent
+          projectId={projectId}
+          projectName={projectName}
+          files={files}
+        />
       )}
     </main>
   );

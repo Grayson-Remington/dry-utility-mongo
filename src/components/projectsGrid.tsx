@@ -36,7 +36,7 @@ export default function ProjectsGrid({ projects, setProjects }: any) {
             pathname: `/${params.row.projectName}`,
             query: {
               projectName: params.row.projectName,
-              projectId: params.row.id.toString(),
+              projectId: params.row.id,
               projectNumber: params.row.projectNumber,
               role: params.row.users.find(
                 (user: any) => user.email === session?.user?.email

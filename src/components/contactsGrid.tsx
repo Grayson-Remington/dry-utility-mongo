@@ -7,7 +7,7 @@ import { useConfirm } from "material-ui-confirm";
 export default function ContactsGrid({
   contacts,
   setContacts,
-  projectNumber,
+  projectId,
 }: any) {
   const { data: session, status } = useSession();
   const confirm = useConfirm();
@@ -75,7 +75,7 @@ export default function ContactsGrid({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          projectNumber: projectNumber,
+          projectId: projectId,
           contactClass: newItem.contactClass,
           name: newItem.name,
           email: newItem.email,
@@ -114,7 +114,7 @@ export default function ContactsGrid({
     // You can now access the formData object and perform any actions (e.g., send data to the server)
     console.log("Form submitted:", contactFormData);
     const newItem = {
-      projectNumber: projectNumber,
+      projectId: projectId,
       contactClass: contactFormData.contactClass,
       name: contactFormData.name,
       email: contactFormData.email,

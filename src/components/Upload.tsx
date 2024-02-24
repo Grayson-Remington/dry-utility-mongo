@@ -8,7 +8,7 @@ export default function Upload(data: any) {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
-  let { projectNumber } = data;
+  let { projectName, projectId } = data;
 
   const handleFileChange = (event: any) => {
     setSelectedFile(event.target.files[0]);
@@ -38,7 +38,7 @@ export default function Upload(data: any) {
 
     const command = new PutObjectCommand({
       Bucket: process.env.NEXT_PUBLIC_S3_BUCKET_NAME,
-      Key: `${projectNumber}/${selectedFile.name}`,
+      Key: `${projectName + "-" + projectId}/${selectedFile.name}`,
       Body: selectedFile,
     });
 

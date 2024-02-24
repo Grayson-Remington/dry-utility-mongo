@@ -7,12 +7,12 @@ export default async function handler(req: any, res: any) {
     const { projectName, projectNumber, id, email } = req.body;
 
     const response = await db.collection("projects").updateOne(
-      { projectNumber: projectNumber }, // Query for finding an existing item with the same name
+      { id: id }, // Query for finding an existing item with the same name
       {
         $setOnInsert: {
           projectName: projectName,
-          projectNumber: projectNumber,
-          id: id,
+          projectNumber: projectNumber.toString(),
+          id: id.toString(),
           users: [{ email: email, role: "admin" }],
         },
       }, // Data to insert if no matching document is found

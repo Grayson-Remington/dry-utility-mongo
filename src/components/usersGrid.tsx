@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { useConfirm } from "material-ui-confirm";
 import Link from "next/link";
-export default function UsersGrid({ users, setUsers, projectNumber }: any) {
+export default function UsersGrid({ users, setUsers, projectId }: any) {
   const { data: session, status } = useSession();
   const confirm = useConfirm();
   function formatDate(inputDate: any) {
@@ -86,7 +86,7 @@ export default function UsersGrid({ users, setUsers, projectNumber }: any) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          projectNumber: projectNumber,
+          projectId: projectId,
           email: newItem.email,
           role: newItem.role,
         }),
@@ -134,7 +134,7 @@ export default function UsersGrid({ users, setUsers, projectNumber }: any) {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              projectNumber: projectNumber,
+              projectId: projectId,
               email: email,
             }),
           });
@@ -211,12 +211,12 @@ export default function UsersGrid({ users, setUsers, projectNumber }: any) {
           <div className='flex w-full max-w-xl' key={project._id}>
             <Link
               className='hover:bg-gray-200 border w-2/3 text-center border-black rounded-lg m-1 p-2'
-              href={`/${project.projectNumber}`}
-              as={`/${project.projectNumber}`}>
-              {project.projectNumber}
+              href={`/${project.projectId}`}
+              as={`/${project.projectId}`}>
+              {project.projectId}
             </Link>
             <button
-              onClick={() => deleteProject(project._id, project.projectNumber)}>
+              onClick={() => deleteProject(project._id, project.projectId)}>
               Delete
             </button>
           </div>

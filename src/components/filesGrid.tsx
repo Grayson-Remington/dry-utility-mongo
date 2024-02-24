@@ -11,7 +11,12 @@ import {
   _Object,
 } from "@aws-sdk/client-s3";
 import Upload from "./Upload";
-export default function FilesGrid({ projectNumber, files, setFiles }: any) {
+export default function FilesGrid({
+  projectId,
+  projectName,
+  files,
+  setFiles,
+}: any) {
   const { data: session, status } = useSession();
   const confirm = useConfirm();
 
@@ -67,9 +72,9 @@ export default function FilesGrid({ projectNumber, files, setFiles }: any) {
           href={{
             pathname: `https://${
               process.env.NEXT_PUBLIC_S3_BUCKET_NAME
-            }.s3.amazonaws.com/${projectNumber}/${shortenStringAfterLastBackslash(
-              params.row.Key
-            )}`,
+            }.s3.amazonaws.com/${
+              projectName + "-" + projectId
+            }/${shortenStringAfterLastBackslash(params.row.Key)}`,
           }}>
           {shortenStringAfterLastBackslash(params.row.Key)}
         </Link>
@@ -115,7 +120,7 @@ export default function FilesGrid({ projectNumber, files, setFiles }: any) {
     <>
       {status === "authenticated" && files && (
         <div className='max-w-4xl bg-white rounded-b-lg w-full p-1'>
-          <Upload projectNumber={projectNumber} />
+          <Upload projectName={projectName} projectId={projectId} />
           <div style={{ height: 500, width: "100%" }}>
             {files && (
               <DataGrid
@@ -134,12 +139,12 @@ export default function FilesGrid({ projectNumber, files, setFiles }: any) {
           <div className='flex w-full max-w-xl' key={project._id}>
             <Link
               className='hover:bg-gray-200 border w-2/3 text-center border-black rounded-lg m-1 p-2'
-              href={`/${project.projectNumber}`}
-              as={`/${project.projectNumber}`}>
-              {project.projectNumber}
+              href={`/${project.projectId}`}
+              as={`/${project.projectId}`}>
+              {project.projectId}
             </Link>
             <button
-              onClick={() => deleteProject(project._id, project.projectNumber)}>
+              onClick={() => deleteProject(project._id, project.projectId)}>
               Delete
             </button>
           </div>

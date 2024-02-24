@@ -4,7 +4,11 @@ import { useSession } from "next-auth/react";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { useConfirm } from "material-ui-confirm";
 import { Avatar } from "@mui/material";
-export default function TimelineGrid({ tasks, setTasks, projectNumber }: any) {
+export default function TimelineGrid({
+  timelineItems,
+  setTimelineItems,
+  projectId,
+}: any) {
   const { data: session, status } = useSession();
   const confirm = useConfirm();
   function formatDate(inputDate: any) {
@@ -64,15 +68,15 @@ export default function TimelineGrid({ tasks, setTasks, projectNumber }: any) {
       flex: 1,
     },
     {
-      field: "taskClass",
+      field: "timelineItemClass",
       headerName: "Category",
       width: 100,
       cellClassName: (params) =>
-        params.row.taskClass == "Power"
+        params.row.timelineItemClass == "Power"
           ? "bg-red-500"
-          : params.row.taskClass == "Gas"
+          : params.row.timelineItemClass == "Gas"
           ? "bg-yellow-300"
-          : params.row.taskClass == "Telco"
+          : params.row.timelineItemClass == "Telco"
           ? "bg-orange-500"
           : "bg-purple-500",
       align: "center",
@@ -99,7 +103,9 @@ export default function TimelineGrid({ tasks, setTasks, projectNumber }: any) {
       width: 70,
 
       renderCell: (params) => (
-        <button className='p-2' onClick={() => deleteTask(params.row.id)}>
+        <button
+          className='p-2'
+          onClick={() => deleteTimelineItem(params.row.id)}>
           <FaRegTrashAlt />
         </button>
       ),
@@ -127,17 +133,17 @@ export default function TimelineGrid({ tasks, setTasks, projectNumber }: any) {
   function getRowId(row: any) {
     return row.id;
   }
-  const addTask = async (newItem: any) => {
+  const addTimelineItem = async (newItem: any) => {
     try {
-      const response = await fetch("/api/addTask", {
+      const response = await fetch("/api/addTimelineItem", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           author: session?.user?.name,
-          projectNumber: projectNumber,
-          taskClass: newItem.taskClass,
+          projectId: projectId,
+          timelineItemClass: newItem.timelineItemClass,
           date: newItem.date,
           text: newItem.text,
           id: newItem.id,
@@ -154,11 +160,11 @@ export default function TimelineGrid({ tasks, setTasks, projectNumber }: any) {
       console.error("An error occurred:", error);
     }
   };
-  const deleteTask = async (id: any) => {
+  const deleteTimelineItem = async (id: any) => {
     confirm({ description: "This action is permanent!" })
       .then(async () => {
         try {
-          const response = await fetch("/api/deleteTask", {
+          const response = await fetch("/api/deleteTimelineItem", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -168,7 +174,9 @@ export default function TimelineGrid({ tasks, setTasks, projectNumber }: any) {
 
           if (response.ok) {
             const data = await response.json();
-            setTasks(tasks!.filter((obj: any) => obj.id !== id));
+            setTimelineItems(
+              timelineItems!.filter((obj: any) => obj.id !== id)
+            );
             console.log(data); // Handle success
           } else {
             console.error("Failed to sign up");
@@ -181,72 +189,72 @@ export default function TimelineGrid({ tasks, setTasks, projectNumber }: any) {
         /* ... */
       });
   };
-  const [taskFormData, setTaskFormData] = useState({
+  const [timelineItemFormData, setTimelineItemFormData] = useState({
     date: "",
     text: "",
-    taskClass: "Power",
+    timelineItemClass: "Power",
   });
 
-  const handleTaskInputChange = (e: any) => {
+  const handleTimelineItemInputChange = (e: any) => {
     const { name, value } = e.target;
-    setTaskFormData((prevData) => ({
+    setTimelineItemFormData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
   };
-  const handleTaskSubmit = (e: any) => {
+  const handleTimelineItemSubmit = (e: any) => {
     e.preventDefault();
     // You can now access the formData object and perform any actions (e.g., send data to the server)
-    console.log("Form submitted:", taskFormData);
+    console.log("Form submitted:", timelineItemFormData);
     const newItem = {
       author: session?.user?.name,
-      projectNumber: projectNumber,
-      taskClass: taskFormData.taskClass,
-      date: taskFormData.date,
-      text: taskFormData.text,
+      projectId: projectId,
+      timelineItemClass: timelineItemFormData.timelineItemClass,
+      date: timelineItemFormData.date,
+      text: timelineItemFormData.text,
       id: Math.floor(Math.random() * 1000000000),
     };
-    addTask(newItem);
+    addTimelineItem(newItem);
     // Update the state by creating a new array with the new item
-    setTasks((prevData: any) => [...prevData, newItem]);
+    setTimelineItems((prevData: any) => [...prevData, newItem]);
   };
   return (
     <>
-      {status === "authenticated" && tasks && (
+      {status === "authenticated" && timelineItems && (
         <div className='max-w-4xl w-full bg-white rounded-b-lg p-1'>
-          <form onSubmit={handleTaskSubmit}>
+          <form onSubmit={handleTimelineItemSubmit}>
             <div className='w-full flex gap-2 py-1 border-b border-black'>
               <div className='border-r h-full pr-1 border-black font-bold'>
                 <input
                   type='date'
                   name='date' // Add name attribute to identify the input in handleInputChange
-                  value={taskFormData.date}
-                  onChange={handleTaskInputChange}
+                  value={timelineItemFormData.date}
+                  onChange={handleTimelineItemInputChange}
                   required
                 />
               </div>
               <input
                 type='text'
                 name='text' // Add name attribute to identify the input in handleInputChange
-                value={taskFormData.text}
-                onChange={handleTaskInputChange}
+                value={timelineItemFormData.text}
+                onChange={handleTimelineItemInputChange}
                 className='border border-black rounded-md w-full'
                 required
               />
               <select
                 className={`rounded-lg p-1 font-bold ${
-                  taskFormData.taskClass == "Power"
+                  timelineItemFormData.timelineItemClass == "Power"
                     ? "bg-red-500"
-                    : taskFormData.taskClass === "Gas"
+                    : timelineItemFormData.timelineItemClass === "Gas"
                     ? "bg-yellow-500"
-                    : taskFormData.taskClass === "Telco"
+                    : timelineItemFormData.timelineItemClass === "Telco"
                     ? "bg-orange-500"
                     : "bg-purple-500"
                 }`}
-                value={taskFormData.taskClass}
-                onChange={handleTaskInputChange}
-                id='taskClass'
-                name='taskClass'>
+                value={timelineItemFormData.timelineItemClass}
+                onChange={handleTimelineItemInputChange}
+                id='timelineItemClass'
+                name='timelineItemClass'>
                 <option className='bg-red-500' value='Power'>
                   Power
                 </option>
@@ -268,7 +276,7 @@ export default function TimelineGrid({ tasks, setTasks, projectNumber }: any) {
           <div style={{ height: 450, width: "100%" }}>
             <DataGrid
               getRowId={getRowId}
-              rows={tasks}
+              rows={timelineItems}
               columns={columns}
               initialState={{
                 pagination: {
