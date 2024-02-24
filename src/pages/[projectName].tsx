@@ -6,7 +6,7 @@ import ContactsGrid from "@/components/contactsGrid";
 import { Button, ButtonGroup, CircularProgress } from "@mui/material";
 import TaskGrid from "@/components/taskGrid";
 import { useSession } from "next-auth/react";
-import Upload from "@/components/Upload";
+
 import MapComponent from "@/components/MapComponent";
 import FilesGrid from "@/components/filesGrid";
 import { ListObjectsV2Command, S3Client, _Object } from "@aws-sdk/client-s3";
@@ -77,9 +77,6 @@ export default function ProjectPage({
       if (response.ok) {
         const data = await response.json();
         setUsers(data[0].users);
-        console.log(role, "role");
-
-        console.log(data, "users"); // Handle success
       } else {
         console.error("Failed to sign up");
       }
@@ -100,7 +97,6 @@ export default function ProjectPage({
       if (response.ok) {
         const data = await response.json();
         setTimelineItems(data);
-        console.log(data); // Handle success
       } else {
         console.error("Failed to sign up");
       }
@@ -121,7 +117,6 @@ export default function ProjectPage({
       if (response.ok) {
         const data = await response.json();
         setContacts(data);
-        console.log(data); // Handle success
       } else {
         console.error("Failed to sign up");
       }
@@ -142,7 +137,6 @@ export default function ProjectPage({
       if (response.ok) {
         const data = await response.json();
         setTasks(data);
-        console.log(data); // Handle success
         setLoading(false);
       } else {
         console.error("Failed to sign up");
@@ -181,8 +175,6 @@ export default function ProjectPage({
       } else {
         setFiles([]);
       } // Remove the wrapping array brackets
-      console.log(response);
-      console.log(files);
     } catch (err) {
       console.error(err);
     }
@@ -219,7 +211,6 @@ export default function ProjectPage({
 
   useEffect(() => {
     if (!projectId) return;
-    console.log(projectId, "projectId");
     getUsers();
     getTasks();
     getContacts();

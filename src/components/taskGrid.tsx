@@ -49,7 +49,6 @@ export default function TaskGrid({
           if (response.ok) {
             const data = await response.json();
             setTasks(tasks!.filter((obj: any) => obj.id !== id));
-            console.log(data); // Handle success
           } else {
             console.error("Failed to sign up");
           }
@@ -192,7 +191,6 @@ export default function TaskGrid({
 
       if (response.ok) {
         const data = await response.json();
-        console.log(data); // Handle success
       } else {
         console.error("Failed to sign up");
       }
@@ -217,7 +215,6 @@ export default function TaskGrid({
   const handleTaskSubmit = (e: any) => {
     e.preventDefault();
     // You can now access the formData object and perform any actions (e.g., send data to the server)
-    console.log("Form submitted:", taskFormData);
     const newItem = {
       author: session?.user?.name,
       projectName: projectName,

@@ -33,9 +33,7 @@ export default function Home() {
       if (response.ok) {
         const data = await response.json();
         setProjectIds(data.map((project: any) => project.id));
-        console.log(projectIds);
         setProjects(data);
-        console.log(data); // Handle success
       } else {
         console.error("Failed to sign up");
       }
@@ -68,7 +66,6 @@ export default function Home() {
         const data = await response.json();
         setAllTasks(data);
         setLoading(false);
-        console.log(data); // Handle success
       } else {
         console.error("Failed to sign up");
       }

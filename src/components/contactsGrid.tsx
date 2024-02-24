@@ -93,7 +93,6 @@ export default function ContactsGrid({
 
       if (response.ok) {
         const data = await response.json();
-        console.log(data); // Handle success
       } else {
         console.error("Failed to sign up");
       }
@@ -119,7 +118,6 @@ export default function ContactsGrid({
   const handleContactSubmit = (e: any) => {
     e.preventDefault();
     // You can now access the formData object and perform any actions (e.g., send data to the server)
-    console.log("Form submitted:", contactFormData);
     const newItem = {
       projectId: projectId,
       contactClass: contactFormData.contactClass,
@@ -147,7 +145,6 @@ export default function ContactsGrid({
           if (response.ok) {
             const data = await response.json();
             setContacts(contacts!.filter((obj: any) => obj.id !== id));
-            console.log(data); // Handle success
           } else {
             console.error("Failed to sign up");
           }

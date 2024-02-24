@@ -44,7 +44,6 @@ export default function AllTasksGrid({ tasks, setTasks, projects }: any) {
           if (response.ok) {
             const data = await response.json();
             setTasks(tasks!.filter((obj: any) => obj.id !== id));
-            console.log(data); // Handle success
             toast.success("Successfully deleted To do");
           } else {
             console.error("Failed to sign up");
@@ -193,7 +192,6 @@ export default function AllTasksGrid({ tasks, setTasks, projects }: any) {
 
       if (response.ok) {
         const data = await response.json();
-        console.log(data); // Handle success
         toast.success("Successfully added Task");
       } else {
         console.error("Failed to sign up");
@@ -218,23 +216,19 @@ export default function AllTasksGrid({ tasks, setTasks, projects }: any) {
       ...prevData,
       [name]: value,
     }));
-    console.log(name, value, "testing");
   };
   const handleProjectNameInputChange = (e: any) => {
     const selectedProjectString = e.target.value;
     const projectObject = JSON.parse(selectedProjectString);
-    console.log(selectedProjectString, projectObject);
     setTaskFormData((prevData) => ({
       ...prevData,
       projectName: projectObject.projectName,
       projectId: projectObject.projectId,
     }));
-    console.log(taskFormData);
   };
   const handleTaskSubmit = (e: any) => {
     e.preventDefault();
     // You can now access the formData object and perform any actions (e.g., send data to the server)
-    console.log("Form submitted:", taskFormData);
     const newItem = {
       author: session?.user?.name,
 
@@ -249,7 +243,6 @@ export default function AllTasksGrid({ tasks, setTasks, projects }: any) {
     // Update the state by creating a new array with the new item
     setTasks((prevData: any) => [...prevData, newItem]);
   };
-  console.log(tasks);
   return (
     <>
       <div>

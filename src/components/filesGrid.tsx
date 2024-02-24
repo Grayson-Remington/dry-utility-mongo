@@ -34,7 +34,6 @@ export default function FilesGrid({
     }
   }
   const deleteS3File = async (fileNameToDelete: any) => {
-    console.log(fileNameToDelete);
     confirm({ description: "This action is permanent!" }).then(async () => {
       try {
         if (!process.env.NEXT_PUBLIC_S3_BUCKET_NAME) {
@@ -59,7 +58,6 @@ export default function FilesGrid({
 
         await client.send(command);
         setFiles(files!.filter((obj: any) => obj.Key !== fileNameToDelete));
-        console.log(`File ${fileNameToDelete} deleted successfully.`);
       } catch (error) {
         console.error(`Error deleting file ${fileNameToDelete}:`, error);
       }
@@ -126,7 +124,6 @@ export default function FilesGrid({
   const handleFileChange = (event: any) => {
     setSelectedFile(event.target.files[0]);
   };
-  console.log(files);
   const uploadFile = async () => {
     if (!selectedFile) {
       alert("Please select a file");
@@ -147,7 +144,6 @@ export default function FilesGrid({
         secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY!,
       },
     });
-    console.log(selectedFile, "selectedFile");
 
     const command = new PutObjectCommand({
       Bucket: process.env.NEXT_PUBLIC_S3_BUCKET_NAME,
@@ -157,7 +153,6 @@ export default function FilesGrid({
 
     try {
       const response = await client.send(command);
-      console.log(response);
 
       setFiles((prevData: any) => [
         ...prevData,

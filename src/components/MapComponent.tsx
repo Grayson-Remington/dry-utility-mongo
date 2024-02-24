@@ -10,7 +10,6 @@ const MapComponent = ({ projectId, projectName, files, setFiles }: any) => {
     // Use the replace method with a regular expression to replace all spaces with pluses
     return inputString.replace(/ /g, "+");
   }
-  console.log(files);
   function replaceSpacesWithPlus(inputString: any) {
     // Use the replace() method with a regular expression to replace spaces with "+"
     var replacedString = inputString.replace(/ /g, "+");
@@ -87,7 +86,6 @@ const MapComponent = ({ projectId, projectName, files, setFiles }: any) => {
   const handleFileChange = (event: any) => {
     setSelectedFile(event.target.files[0]);
   };
-  console.log(files);
   const uploadFile = async () => {
     if (!selectedFile) {
       alert("Please select a file");
@@ -108,7 +106,6 @@ const MapComponent = ({ projectId, projectName, files, setFiles }: any) => {
         secretAccessKey: process.env.NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY!,
       },
     });
-    console.log(selectedFile, "selectedFile");
 
     const command = new PutObjectCommand({
       Bucket: process.env.NEXT_PUBLIC_S3_BUCKET_NAME,
@@ -118,7 +115,6 @@ const MapComponent = ({ projectId, projectName, files, setFiles }: any) => {
 
     try {
       const response = await client.send(command);
-      console.log(response);
 
       setFiles((prevData: any) => [
         ...prevData,

@@ -159,7 +159,6 @@ export default function TimelineGrid({
 
       if (response.ok) {
         const data = await response.json();
-        console.log(data); // Handle success
       } else {
         console.error("Failed to sign up");
       }
@@ -184,7 +183,6 @@ export default function TimelineGrid({
             setTimelineItems(
               timelineItems!.filter((obj: any) => obj.id !== id)
             );
-            console.log(data); // Handle success
           } else {
             console.error("Failed to sign up");
           }
@@ -212,7 +210,6 @@ export default function TimelineGrid({
   const handleTimelineItemSubmit = (e: any) => {
     e.preventDefault();
     // You can now access the formData object and perform any actions (e.g., send data to the server)
-    console.log("Form submitted:", timelineItemFormData);
     const newItem = {
       author: session?.user?.name,
       projectId: projectId,

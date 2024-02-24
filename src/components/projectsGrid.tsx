@@ -23,7 +23,6 @@ export default function ProjectsGrid({ projects, setProjects }: any) {
 
     return formattedDate;
   }
-  console.log(projects);
   const columns: GridColDef[] = [
     {
       field: "projectName",
@@ -116,7 +115,6 @@ export default function ProjectsGrid({ projects, setProjects }: any) {
 
       if (response.ok) {
         const data = await response.json();
-        console.log(data); // Handle success
         toast.success("Successfully added Project");
       } else {
         console.error("Failed to sign up");
@@ -141,7 +139,6 @@ export default function ProjectsGrid({ projects, setProjects }: any) {
           if (response.ok) {
             const data = await response.json();
             setProjects(projects!.filter((obj: any) => obj.id !== id));
-            console.log(data); // Handle success
             toast.success("Successfully deleted Project");
           } else {
             console.error("Failed to sign up");
@@ -169,7 +166,6 @@ export default function ProjectsGrid({ projects, setProjects }: any) {
   const handleProjectSubmit = (e: any) => {
     e.preventDefault();
     // You can now access the formData object and perform any actions (e.g., send data to the server)
-    console.log("Form submitted:", projectFormData);
     const newItem = {
       projectName: projectFormData.projectName,
       projectNumber: projectFormData.projectNumber,

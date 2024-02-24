@@ -20,7 +20,6 @@ export default async function handler(req: any, res: any) {
       }, // Data to insert if no matching document is found
       { upsert: true } // If no matching document found, insert the data
     );
-    console.log(author, "author");
     res.json(response);
   } catch (e) {
     console.error(e);

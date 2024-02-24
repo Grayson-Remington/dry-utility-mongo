@@ -28,7 +28,6 @@ export default function UsersGrid({ users, setUsers, projectId }: any) {
 
     return formattedDate;
   }
-  console.log(users);
   const columns: GridColDef[] = [
     {
       field: "users",
@@ -105,7 +104,6 @@ export default function UsersGrid({ users, setUsers, projectId }: any) {
           email: "",
           role: "",
         });
-        console.log(data); // Handle success
       } else {
         console.error("Failed to sign up");
       }
@@ -123,7 +121,6 @@ export default function UsersGrid({ users, setUsers, projectId }: any) {
   const handleUserSubmit = (e: any) => {
     e.preventDefault();
     // You can now access the formData object and perform any actions (e.g., send data to the server)
-    console.log("Form submitted:", userFormData);
     const newItem = {
       email: userFormData.email,
       role: userFormData.role,
@@ -149,7 +146,6 @@ export default function UsersGrid({ users, setUsers, projectId }: any) {
           if (response.ok) {
             const data = await response.json();
             setUsers(users!.filter((obj: any) => obj.email !== email));
-            console.log(data); // Handle success
           } else {
             console.error("Failed to sign up");
           }
