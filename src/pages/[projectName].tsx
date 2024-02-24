@@ -3,7 +3,7 @@ import * as React from "react";
 import Navbar from "@/components/navbar";
 import TimelineGrid from "@/components/timelineGrid";
 import ContactsGrid from "@/components/contactsGrid";
-import { Button, ButtonGroup } from "@mui/material";
+import { Button, ButtonGroup, CircularProgress } from "@mui/material";
 import TaskGrid from "@/components/taskGrid";
 import { useSession } from "next-auth/react";
 import Upload from "@/components/Upload";
@@ -54,7 +54,7 @@ export default function ProjectPage({
   const [users, setUsers] = useState<any[] | undefined>();
   const [files, setFiles] = useState<_Object[]>();
   const [selectedGrid, setSelectedGrid] = useState<string>("Tasks");
-
+  const [loading, setLoading] = useState(true);
   const { data: session, status } = useSession();
 
   useEffect(() => {
@@ -143,6 +143,7 @@ export default function ProjectPage({
         const data = await response.json();
         setTasks(data);
         console.log(data); // Handle success
+        setLoading(false);
       } else {
         console.error("Failed to sign up");
       }
@@ -229,7 +230,13 @@ export default function ProjectPage({
   const [emailFormData, setEmailFormData] = useState({
     email: null,
   });
-
+  if (loading) {
+    return (
+      <main className='w-full px-4 h-full min-h-screen flex flex-col items-center justify-center bg-blue-200'>
+        <CircularProgress />
+      </main>
+    );
+  }
   return (
     <main className='w-full h-full min-h-screen flex flex-col items-center bg-blue-200 px-4'>
       <Navbar />
@@ -338,6 +345,7 @@ export default function ProjectPage({
           projectId={projectId}
           projectName={projectName}
           files={files}
+          setFiles={setFiles}
         />
       )}
     </main>

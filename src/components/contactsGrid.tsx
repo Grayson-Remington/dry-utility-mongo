@@ -3,6 +3,13 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { useConfirm } from "material-ui-confirm";
+import {
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+} from "@mui/material";
 
 export default function ContactsGrid({
   contacts,
@@ -158,83 +165,88 @@ export default function ContactsGrid({
         <div className='max-w-4xl w-full bg-white rounded-b-lg p-1'>
           <form onSubmit={handleContactSubmit}>
             <div className='w-full flex items-center gap-2 py-1 border-b border-black'>
-              <div className='border-r h-full pr-1 border-black font-bold'>
-                <label htmlFor='' className='text-xs'>
-                  Name
-                </label>
-                <input
-                  type='text'
-                  name='name' // Add name attribute to identify the input in handleInputChange
-                  value={contactFormData.name}
-                  className='border border-black rounded-md w-full'
-                  onChange={handleContactInputChange}
-                  required
-                  placeholder='Name'
-                />
-                <label htmlFor='' className='text-xs'>
-                  Email
-                </label>
-                <input
-                  type='text'
-                  name='email' // Add name attribute to identify the input in handleInputChange
-                  value={contactFormData.email}
-                  onChange={handleContactInputChange}
-                  className='border border-black rounded-md w-full'
-                  required
-                  placeholder='Email'
-                />
-              </div>
+              <TextField
+                type='text'
+                name='name' // Add name attribute to identify the input in handleInputChange
+                value={contactFormData.name}
+                onChange={handleContactInputChange}
+                required
+                className='border border-black rounded-md w-full'
+                id='name'
+                label='Name'
+                variant='outlined'
 
-              <div className='border-r h-full pr-1 border-black font-bold'>
-                <label htmlFor='' className='text-xs'>
-                  Phone Number
-                </label>
-                <input
-                  type='text'
-                  name='phoneNumber' // Add name attribute to identify the input in handleInputChange
-                  value={contactFormData.phoneNumber}
+                // Add name attribute to identify the input in handleInputChange
+              />
+
+              <TextField
+                type='text'
+                name='email' // Add name attribute to identify the input in handleInputChange
+                value={contactFormData.email}
+                onChange={handleContactInputChange}
+                required
+                className='border border-black rounded-md w-full'
+                id='email'
+                label='Email'
+                variant='outlined'
+
+                // Add name attribute to identify the input in handleInputChange
+              />
+              <TextField
+                type='text'
+                name='phoneNumber' // Add name attribute to identify the input in handleInputChange
+                value={contactFormData.phoneNumber}
+                onChange={handleContactInputChange}
+                required
+                className='border border-black rounded-md w-full'
+                id='phoneNumber'
+                label='Phone Number'
+                variant='outlined'
+
+                // Add name attribute to identify the input in handleInputChange
+              />
+              <FormControl fullWidth className='group max-w-48'>
+                <InputLabel id='timelineItemClass-label'>
+                  Timline Item Class
+                </InputLabel>
+                <Select
+                  value={contactFormData.contactClass}
                   onChange={handleContactInputChange}
-                  className='border border-black rounded-md w-full'
-                  required
-                  placeholder='Phone Number'
-                />
-                <div className='flex flex-col'>
-                  <label htmlFor='' className='text-xs py-1'>
-                    Category
-                  </label>
-                  <select
-                    className={`border border-black w-fit rounded-lg p-1  ${
-                      contactFormData.contactClass == "Power"
-                        ? "bg-red-500"
-                        : contactFormData.contactClass === "Gas"
-                        ? "bg-yellow-500"
-                        : contactFormData.contactClass === "Telco"
-                        ? "bg-orange-500"
-                        : "bg-purple-500"
-                    }`}
-                    value={contactFormData.contactClass}
-                    onChange={handleContactInputChange}
-                    id='contactClass'
-                    name='contactClass'>
-                    <option className='bg-red-500' value='Power'>
-                      Power
-                    </option>
-                    <option className='bg-yellow-500' value='Gas'>
-                      Gas
-                    </option>
-                    <option className='bg-orange-500' value='Telco'>
-                      Telco
-                    </option>
-                    <option className='bg-purple-500' value='Misc'>
-                      Misc
-                    </option>
-                  </select>
-                </div>
-              </div>
+                  id='contactClass'
+                  name='contactClass'
+                  labelId='contactClass-label'
+                  label='Contact Class'
+                  className=''>
+                  <MenuItem className='' value='Power'>
+                    <div className='flex justify-between items-center w-full'>
+                      <div>Power</div>
+                      <div className='rounded-full bg-red-500 h-4 w-4'></div>
+                    </div>
+                  </MenuItem>
+                  <MenuItem className='' value='Gas'>
+                    <div className='flex justify-between items-center w-full'>
+                      <div>Gas</div>
+                      <div className='rounded-full bg-yellow-500 h-4 w-4'></div>
+                    </div>
+                  </MenuItem>
+                  <MenuItem className='' value='Telco'>
+                    <div className='flex justify-between items-center w-full'>
+                      <div>Telco</div>
+                      <div className='rounded-full bg-orange-500 h-4 w-4'></div>
+                    </div>
+                  </MenuItem>
+                  <MenuItem className='' value='Misc'>
+                    <div className='flex justify-between items-center w-full'>
+                      <div>Misc</div>
+                      <div className='rounded-full bg-purple-500 h-4 w-4'></div>
+                    </div>
+                  </MenuItem>
+                </Select>
+              </FormControl>
 
               <button
                 type='submit'
-                className='border h-fit border-black rounded-lg p-1 hover:scale-105'>
+                className=' self-center max-w-xs hover:scale-105 align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-4 px-6 rounded-lg bg-gray-900 text-white shadow-md shadow-gray-900/10 hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none'>
                 Add
               </button>
             </div>

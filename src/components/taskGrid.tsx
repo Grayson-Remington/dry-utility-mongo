@@ -220,7 +220,8 @@ export default function TaskGrid({
     console.log("Form submitted:", taskFormData);
     const newItem = {
       author: session?.user?.name,
-
+      projectName: projectName,
+      projectId: projectId,
       taskClass: taskFormData.taskClass,
       date: taskFormData.date,
       text: taskFormData.text,

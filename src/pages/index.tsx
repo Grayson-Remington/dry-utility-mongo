@@ -6,7 +6,7 @@ import Navbar from "@/components/navbar";
 import { DataGrid, GridColDef, GridValueGetterParams } from "@mui/x-data-grid";
 import { useSession, signOut } from "next-auth/react";
 import { FaRegTrashAlt } from "react-icons/fa";
-import { Button, ButtonGroup } from "@mui/material";
+import { Button, ButtonGroup, CircularProgress } from "@mui/material";
 import ProjectsGrid from "@/components/projectsGrid";
 import TodoGrid from "@/components/taskGrid";
 
@@ -19,7 +19,7 @@ export default function Home() {
   const { data: session, status } = useSession();
   const [selectedGrid, setSelectedGrid] = useState<string>("Projects");
   const [allTasks, setAllTasks] = useState<any[] | undefined>();
-
+  const [loading, setLoading] = useState(true);
   const getProjects = async () => {
     try {
       const response = await fetch("/api/getProjects", {
@@ -32,7 +32,7 @@ export default function Home() {
 
       if (response.ok) {
         const data = await response.json();
-        setProjectIds(data.map((project: any) => project.id.toString()));
+        setProjectIds(data.map((project: any) => project.id));
         console.log(projectIds);
         setProjects(data);
         console.log(data); // Handle success
@@ -67,6 +67,7 @@ export default function Home() {
       if (response.ok) {
         const data = await response.json();
         setAllTasks(data);
+        setLoading(false);
         console.log(data); // Handle success
       } else {
         console.error("Failed to sign up");
@@ -75,7 +76,13 @@ export default function Home() {
       console.error("An error occurred:", error);
     }
   };
-
+  if (loading) {
+    return (
+      <main className='w-full px-4 h-full min-h-screen flex flex-col items-center justify-center bg-blue-200'>
+        <CircularProgress />
+      </main>
+    );
+  }
   return (
     <main className='w-full px-4 h-full min-h-screen flex flex-col items-center bg-blue-200'>
       <Navbar />

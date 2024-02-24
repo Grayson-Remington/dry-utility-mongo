@@ -4,10 +4,10 @@ export default async function handler(req: any, res: any) {
   try {
     const client = await clientPromise;
     const db = client.db("dryUdb");
-    const { projectNumber, email, role } = req.body;
+    const { projectId, email, role } = req.body;
 
     const response = await db.collection("projects").updateOne(
-      { projectNumber: projectNumber }, // Query for finding an existing item with the same projectNumber
+      { id: projectId }, // Query for finding an existing item with the same projectNumber
       {
         $addToSet: {
           // Using $addToSet to avoid adding duplicate users
