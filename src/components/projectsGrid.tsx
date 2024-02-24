@@ -6,7 +6,11 @@ import { useConfirm } from "material-ui-confirm";
 import Link from "next/link";
 import { TextField } from "@mui/material";
 import toast, { Toaster } from "react-hot-toast";
-export default function ProjectsGrid({ projects, setProjects }: any) {
+export default function ProjectsGrid({
+  projects,
+  setProjects,
+  setLoading,
+}: any) {
   const { data: session, status } = useSession();
   const confirm = useConfirm();
   function formatDate(inputDate: any) {
@@ -30,6 +34,7 @@ export default function ProjectsGrid({ projects, setProjects }: any) {
       width: 500,
       renderCell: (params) => (
         <Link
+          onClick={() => setLoading(true)}
           className='hover:bg-blue-200 hover:font-bold hover:text-lg border rounded-lg w-full text-center border-black p-3 hover:scale-105 transition-transform'
           href={{
             pathname: `/${params.row.projectName}`,

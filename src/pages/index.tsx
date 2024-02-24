@@ -34,8 +34,10 @@ export default function Home() {
         const data = await response.json();
         setProjectIds(data.map((project: any) => project.id));
         setProjects(data);
+        setLoading(false);
       } else {
         console.error("Failed to sign up");
+        setLoading(false);
       }
     } catch (error) {
       console.error("An error occurred:", error);
@@ -43,7 +45,7 @@ export default function Home() {
   };
 
   useEffect(() => {
-    if (!session) return setLoading(false);
+    if (!session) return;
 
     getProjects();
   }, [session]);
@@ -73,17 +75,17 @@ export default function Home() {
       console.error("An error occurred:", error);
     }
   };
-  if (loading) {
+  if (session && loading)
     return (
-      <main className='w-full px-4 h-full min-h-screen flex flex-col items-center justify-center bg-blue-200'>
+      <main className='w-full px-4 h-full min-h-screen flex flex-col justify-center items-center bg-blue-200'>
         <CircularProgress />
       </main>
     );
-  }
   return (
     <main className='w-full px-4 h-full min-h-screen flex flex-col items-center bg-blue-200'>
       <Navbar />
-      {status === "authenticated" && (
+
+      {status === "authenticated" ? (
         <>
           <div className=''>
             <button
@@ -106,7 +108,11 @@ export default function Home() {
             </button>
           </div>
           {selectedGrid === "Projects" && (
-            <ProjectsGrid projects={projects} setProjects={setProjects} />
+            <ProjectsGrid
+              projects={projects}
+              setProjects={setProjects}
+              setLoading={setLoading}
+            />
           )}
           {selectedGrid === "Tasks" && (
             <AllTasksGrid
@@ -116,6 +122,8 @@ export default function Home() {
             />
           )}
         </>
+      ) : (
+        <div></div>
       )}
     </main>
   );
