@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { loadModules } from "esri-loader";
-import Upload from "./Upload";
 import { Button, styled } from "@mui/material";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
