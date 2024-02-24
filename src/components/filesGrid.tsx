@@ -11,7 +11,6 @@ import {
   S3Client,
   _Object,
 } from "@aws-sdk/client-s3";
-import Upload from "./Upload";
 import { Button, styled } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 export default function FilesGrid({
