@@ -160,7 +160,7 @@ export default function TimelineGrid({
       editable: true,
       width: 130,
       valueGetter: (params) => {
-        return new Date(params.row.date);
+        return new Date(params.row.date.replace(/-/g, "/").replace(/T.+/, ""));
       },
     },
     {
@@ -341,6 +341,7 @@ export default function TimelineGrid({
       ...prevData,
       [name]: value,
     }));
+    console.log(value);
   };
   const handleTimelineItemSubmit = (e: any) => {
     e.preventDefault();

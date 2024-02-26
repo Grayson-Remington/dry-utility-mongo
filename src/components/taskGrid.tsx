@@ -191,7 +191,7 @@ export default function TaskGrid({
       headerName: "Date",
       width: 130,
       valueGetter: (params) => {
-        return new Date(params.row.date);
+        return new Date(params.row.date.replace(/-/g, "/").replace(/T.+/, ""));
       },
     },
     {
@@ -351,6 +351,7 @@ export default function TaskGrid({
       ...prevData,
       [name]: value,
     }));
+    console.log(value);
   };
   const handleTaskSubmit = (e: any) => {
     e.preventDefault();
