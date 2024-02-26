@@ -11,6 +11,7 @@ import {
   Select,
   TextField,
 } from "@mui/material";
+import { Toaster } from "react-hot-toast";
 export default function UsersGrid({ users, setUsers, projectId }: any) {
   const { data: session, status } = useSession();
   const confirm = useConfirm();
@@ -160,10 +161,11 @@ export default function UsersGrid({ users, setUsers, projectId }: any) {
 
   return (
     <>
+      <Toaster />
       {status === "authenticated" && users && (
         <div className='max-w-4xl bg-white rounded-b-lg w-full p-1'>
           <form onSubmit={handleUserSubmit}>
-            <div className='w-full p-3 flex gap-2 py-1 border-b border-black'>
+            <div className='hidden w-full p-3 sm:flex gap-2 py-1 border-b border-black'>
               <TextField
                 type='email'
                 name='email' // Add name attribute to identify the input in handleInputChange
@@ -212,6 +214,57 @@ export default function UsersGrid({ users, setUsers, projectId }: any) {
                 className=' self-center max-w-xs hover:scale-105 align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-4 px-6 rounded-lg bg-gray-900 text-white shadow-md shadow-gray-900/10 hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none'>
                 Add
               </button>
+            </div>
+            <div className='sm:hidden w-full p-3 flex flex-col gap-2 py-1 border-b border-black'>
+              <TextField
+                type='email'
+                name='email' // Add name attribute to identify the input in handleInputChange
+                value={userFormData.email || undefined}
+                onChange={handleUserInputChange}
+                required
+                className='border border-black rounded-md w-full'
+                id='text'
+                label='Email'
+                variant='outlined'
+
+                // Add name attribute to identify the input in handleInputChange
+              />
+              <div className='flex justify-center gap-2'>
+                <FormControl fullWidth className='group max-w-48'>
+                  <InputLabel id='Role-label'>Role</InputLabel>
+                  <Select
+                    value={userFormData.role}
+                    onChange={handleUserInputChange}
+                    id='role'
+                    name='role'
+                    labelId='role-label'
+                    label='Role'
+                    className=''
+                    required>
+                    <MenuItem className='' value='user'>
+                      <div className='flex justify-between items-center w-full'>
+                        <div>User</div>
+                      </div>
+                    </MenuItem>
+                    <MenuItem className='' value='admin'>
+                      <div className='flex justify-between items-center w-full'>
+                        <div>Admin</div>
+                      </div>
+                    </MenuItem>
+                    <MenuItem className='' value='shareholder'>
+                      <div className='flex justify-between items-center w-full'>
+                        <div>Shareholder</div>
+                      </div>
+                    </MenuItem>
+                  </Select>
+                </FormControl>
+
+                <button
+                  type='submit'
+                  className=' self-center max-w-xs hover:scale-105 align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-4 px-6 rounded-lg bg-gray-900 text-white shadow-md shadow-gray-900/10 hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none'>
+                  Add
+                </button>
+              </div>
             </div>
           </form>
           <div style={{ height: 500, width: "100%" }}>

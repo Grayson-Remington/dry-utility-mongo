@@ -1,4 +1,3 @@
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { FaRegTrashAlt } from "react-icons/fa";
@@ -11,6 +10,25 @@ import {
   Select,
   TextField,
 } from "@mui/material";
+import Button from "@mui/material/Button";
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/DeleteOutlined";
+import SaveIcon from "@mui/icons-material/Save";
+import CancelIcon from "@mui/icons-material/Close";
+import {
+  GridRowsProp,
+  GridRowModesModel,
+  GridRowModes,
+  DataGrid,
+  GridColDef,
+  GridToolbarContainer,
+  GridActionsCellItem,
+  GridEventListener,
+  GridRowId,
+  GridRowModel,
+  GridRowEditStopReasons,
+} from "@mui/x-data-grid";
 export default function TimelineGrid({
   timelineItems,
   setTimelineItems,
@@ -60,15 +78,94 @@ export default function TimelineGrid({
       children: `${name.split(" ")[0][0]}${name.split(" ")[1][0]}`,
     };
   }
+
+  const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
+
+  const handleRowEditStop: GridEventListener<"rowEditStop"> = (
+    params,
+    event
+  ) => {
+    if (params.reason === GridRowEditStopReasons.rowFocusOut) {
+      event.defaultMuiPrevented = true;
+    }
+  };
+
+  const handleEditClick = (id: GridRowId) => () => {
+    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
+  };
+
+  const handleSaveClick = (id: GridRowId) => () => {
+    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
+  };
+
+  const handleDeleteClick = (id: GridRowId) => () => {
+    setTimelineItems(timelineItems.filter((row: any) => row.id !== id));
+  };
+
+  const handleCancelClick = (id: GridRowId) => () => {
+    setRowModesModel({
+      ...rowModesModel,
+      [id]: { mode: GridRowModes.View, ignoreModifications: true },
+    });
+
+    const editedRow = timelineItems.find((row: any) => row.id === id);
+    if (editedRow!.isNew) {
+      setTimelineItems(timelineItems.filter((row: any) => row.id !== id));
+    }
+  };
+
+  const processRowUpdate = async (newRow: GridRowModel) => {
+    const updatedRow = { ...newRow };
+    setTimelineItems(
+      timelineItems.map((row: any) => (row.id === newRow.id ? updatedRow : row))
+    );
+    console.log(updatedRow);
+
+    try {
+      const response = await fetch("/api/updateTimelineItem", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          author: session?.user?.name,
+          projectId: updatedRow.projectId,
+          date: updatedRow.date.toString(),
+          text: updatedRow.text,
+          id: updatedRow.id,
+          timelineItemClass: updatedRow.timelineItemClass,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data, "update reply");
+      } else {
+        console.error("Failed to sign up");
+      }
+    } catch (error) {
+      console.error("An error occurred:", error);
+    }
+    return updatedRow;
+  };
+
+  const handleRowModesModelChange = (newRowModesModel: GridRowModesModel) => {
+    setRowModesModel(newRowModesModel);
+  };
   const columns: GridColDef[] = [
     {
       field: "date",
       headerName: "Date",
+      type: "date",
+      editable: true,
       width: 130,
-      renderCell: (params) => <div>{formatDate(params.row.date)}</div>,
+      valueGetter: (params) => {
+        return new Date(params.row.date);
+      },
     },
     {
       field: "text",
+      editable: true,
       headerName: "Information",
       width: 300,
       minWidth: 300,
@@ -76,6 +173,9 @@ export default function TimelineGrid({
     },
     {
       field: "timelineItemClass",
+      editable: true,
+      type: "singleSelect",
+      valueOptions: ["Power", "Gas", "Telco", "Misc"],
       headerName: "Category",
       width: 100,
       cellClassName: (params) =>
@@ -104,23 +204,58 @@ export default function TimelineGrid({
       align: "right",
       headerAlign: "center",
     },
-    {
-      field: "delete",
-      headerName: "Delete",
-      width: 70,
 
-      renderCell: (params) => (
-        <button
-          className='p-2'
-          onClick={() => deleteTimelineItem(params.row.id)}>
-          <FaRegTrashAlt />
-        </button>
-      ),
-      disableColumnMenu: true,
-      sortable: false,
-      align: "center",
-      headerAlign: "center",
+    {
+      field: "actions",
+      type: "actions",
+      headerName: "Actions",
+      width: 100,
+      cellClassName: "actions",
+      getActions: ({ id }) => {
+        const isInEditMode = rowModesModel[id]?.mode === GridRowModes.Edit;
+
+        if (isInEditMode) {
+          return [
+            <GridActionsCellItem
+              key={1}
+              icon={<SaveIcon />}
+              label='Save'
+              sx={{
+                color: "primary.main",
+              }}
+              onClick={handleSaveClick(id)}
+            />,
+            <GridActionsCellItem
+              key={1}
+              icon={<CancelIcon />}
+              label='Cancel'
+              className='textPrimary'
+              onClick={handleCancelClick(id)}
+              color='inherit'
+            />,
+          ];
+        }
+
+        return [
+          <GridActionsCellItem
+            key='1'
+            icon={<EditIcon />}
+            label='Edit'
+            className='textPrimary'
+            onClick={handleEditClick(id)}
+            color='inherit'
+          />,
+          <GridActionsCellItem
+            key='2'
+            icon={<DeleteIcon />}
+            label='Delete'
+            onClick={() => deleteTimelineItem(id)}
+            color='inherit'
+          />,
+        ];
+      },
     },
+
     // {
     //   field: "age",
     //   headerName: "Age",
@@ -227,7 +362,7 @@ export default function TimelineGrid({
       {status === "authenticated" && timelineItems && (
         <div className='max-w-4xl w-full bg-white rounded-b-lg p-1'>
           <form onSubmit={handleTimelineItemSubmit}>
-            <div className='w-full p-3 flex gap-2 py-1 border-b border-black'>
+            <div className='hidden sm:flex w-full p-3 gap-2 py-1'>
               <input
                 type='date'
                 name='date' // Add name attribute to identify the input in handleInputChange
@@ -294,12 +429,87 @@ export default function TimelineGrid({
                 Add
               </button>
             </div>
+            <div className='sm:hidden w-full p-3 flex flex-col gap-2 py-1'>
+              <TextField
+                type='text'
+                name='text' // Add name attribute to identify the input in handleInputChange
+                className='border border-black rounded-md w-full'
+                required
+                id='text'
+                label='Timeline Item'
+                variant='outlined'
+                value={timelineItemFormData.text}
+                onChange={handleTimelineItemInputChange}
+                // Add name attribute to identify the input in handleInputChange
+              />
+              <div className='flex gap-2 justify-center'>
+                <input
+                  type='date'
+                  name='date' // Add name attribute to identify the input in handleInputChange
+                  value={timelineItemFormData.date}
+                  onChange={handleTimelineItemInputChange}
+                  required
+                  className='max-w-48 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 focus:cursor-text block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
+                />
+                <FormControl fullWidth className='group max-w-48 min-w-32'>
+                  <InputLabel id='timelineItemClass-label'>
+                    Timline Item Class
+                  </InputLabel>
+                  <Select
+                    value={timelineItemFormData.timelineItemClass}
+                    onChange={handleTimelineItemInputChange}
+                    id='timelineItemClass'
+                    name='timelineItemClass'
+                    labelId='timelineItemClass-label'
+                    label='Timeline Item Class'
+                    className=''>
+                    <MenuItem className='' value='Power'>
+                      <div className='flex justify-between items-center w-full'>
+                        <div>Power</div>
+                        <div className='rounded-full bg-red-500 h-4 w-4'></div>
+                      </div>
+                    </MenuItem>
+                    <MenuItem className='' value='Gas'>
+                      <div className='flex justify-between items-center w-full'>
+                        <div>Gas</div>
+                        <div className='rounded-full bg-yellow-500 h-4 w-4'></div>
+                      </div>
+                    </MenuItem>
+                    <MenuItem className='' value='Telco'>
+                      <div className='flex justify-between items-center w-full'>
+                        <div>Telco</div>
+                        <div className='rounded-full bg-orange-500 h-4 w-4'></div>
+                      </div>
+                    </MenuItem>
+                    <MenuItem className='' value='Misc'>
+                      <div className='flex justify-between items-center w-full'>
+                        <div>Misc</div>
+                        <div className='rounded-full bg-purple-500 h-4 w-4'></div>
+                      </div>
+                    </MenuItem>
+                  </Select>
+                </FormControl>
+              </div>
+              <button
+                type='submit'
+                className=' self-center w-full max-w-xs hover:scale-105 align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-4 px-6 rounded-lg bg-gray-900 text-white shadow-md shadow-gray-900/10 hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none'>
+                Add
+              </button>
+            </div>
           </form>
           <div style={{ height: 450, width: "100%" }}>
             <DataGrid
               getRowId={getRowId}
               rows={timelineItems}
               columns={columns}
+              editMode='row'
+              rowModesModel={rowModesModel}
+              onRowModesModelChange={handleRowModesModelChange}
+              onRowEditStop={handleRowEditStop}
+              processRowUpdate={processRowUpdate}
+              slotProps={{
+                toolbar: { setTimelineItems, setRowModesModel },
+              }}
               initialState={{
                 pagination: {
                   paginationModel: { page: 0, pageSize: 10 },

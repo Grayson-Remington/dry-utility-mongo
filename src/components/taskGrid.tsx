@@ -1,4 +1,3 @@
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { FaRegTrashAlt } from "react-icons/fa";
@@ -12,6 +11,26 @@ import {
   TextField,
   Tooltip,
 } from "@mui/material";
+import Button from "@mui/material/Button";
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/DeleteOutlined";
+import SaveIcon from "@mui/icons-material/Save";
+import CancelIcon from "@mui/icons-material/Close";
+import {
+  GridRowsProp,
+  GridRowModesModel,
+  GridRowModes,
+  DataGrid,
+  GridColDef,
+  GridToolbarContainer,
+  GridActionsCellItem,
+  GridEventListener,
+  GridRowId,
+  GridRowModel,
+  GridRowEditStopReasons,
+} from "@mui/x-data-grid";
+
 export default function TaskGrid({
   tasks,
   setTasks,
@@ -88,15 +107,96 @@ export default function TaskGrid({
       children: `${name.split(" ")[0][0]}${name.split(" ")[1][0]}`,
     };
   }
+
+  const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
+
+  const handleRowEditStop: GridEventListener<"rowEditStop"> = (
+    params,
+    event
+  ) => {
+    if (params.reason === GridRowEditStopReasons.rowFocusOut) {
+      event.defaultMuiPrevented = true;
+    }
+  };
+
+  const handleEditClick = (id: GridRowId) => () => {
+    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
+  };
+
+  const handleSaveClick = (id: GridRowId) => () => {
+    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
+  };
+
+  const handleDeleteClick = (id: GridRowId) => () => {
+    setTasks(tasks.filter((row: any) => row.id !== id));
+  };
+
+  const handleCancelClick = (id: GridRowId) => () => {
+    setRowModesModel({
+      ...rowModesModel,
+      [id]: { mode: GridRowModes.View, ignoreModifications: true },
+    });
+
+    const editedRow = tasks.find((row: any) => row.id === id);
+    if (editedRow!.isNew) {
+      setTasks(tasks.filter((row: any) => row.id !== id));
+    }
+  };
+
+  const processRowUpdate = async (newRow: GridRowModel) => {
+    const updatedRow = { ...newRow };
+    setTasks(
+      tasks.map((row: any) => (row.id === newRow.id ? updatedRow : row))
+    );
+    console.log(updatedRow);
+
+    try {
+      const response = await fetch("/api/updateTask", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          author: session?.user?.name,
+          projectName: updatedRow.projectName,
+          projectId: updatedRow.projectId,
+          taskClass: updatedRow.taskClass,
+          date: updatedRow.date.toString(),
+          text: updatedRow.text,
+          id: updatedRow.id,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data, "update reply");
+      } else {
+        console.error("Failed to sign up");
+      }
+    } catch (error) {
+      console.error("An error occurred:", error);
+    }
+    return updatedRow;
+  };
+
+  const handleRowModesModelChange = (newRowModesModel: GridRowModesModel) => {
+    setRowModesModel(newRowModesModel);
+  };
+
   const columns: GridColDef[] = [
     {
       field: "date",
+      type: "date",
+      editable: true,
       headerName: "Date",
       width: 130,
-      renderCell: (params) => <div>{formatDate(params.row.date)}</div>,
+      valueGetter: (params) => {
+        return new Date(params.row.date);
+      },
     },
     {
       field: "text",
+      editable: true,
       headerName: "Information",
       width: 300,
       flex: 1,
@@ -109,6 +209,9 @@ export default function TaskGrid({
     {
       field: "taskClass",
       headerName: "Category",
+      editable: true,
+      type: "singleSelect",
+      valueOptions: ["Power", "Gas", "Telco", "Misc"],
       width: 100,
       cellClassName: (params) =>
         params.row.taskClass == "Power"
@@ -136,20 +239,56 @@ export default function TaskGrid({
       align: "right",
       headerAlign: "center",
     },
-    {
-      field: "delete",
-      headerName: "Delete",
-      width: 70,
 
-      renderCell: (params) => (
-        <button className='p-2' onClick={() => deleteTask(params.row.id)}>
-          <FaRegTrashAlt />
-        </button>
-      ),
-      disableColumnMenu: true,
-      sortable: false,
-      align: "center",
-      headerAlign: "center",
+    {
+      field: "actions",
+      type: "actions",
+      headerName: "Actions",
+      width: 100,
+      cellClassName: "actions",
+      getActions: ({ id }) => {
+        const isInEditMode = rowModesModel[id]?.mode === GridRowModes.Edit;
+
+        if (isInEditMode) {
+          return [
+            <GridActionsCellItem
+              key={1}
+              icon={<SaveIcon />}
+              label='Save'
+              sx={{
+                color: "primary.main",
+              }}
+              onClick={handleSaveClick(id)}
+            />,
+            <GridActionsCellItem
+              key={1}
+              icon={<CancelIcon />}
+              label='Cancel'
+              className='textPrimary'
+              onClick={handleCancelClick(id)}
+              color='inherit'
+            />,
+          ];
+        }
+
+        return [
+          <GridActionsCellItem
+            key='1'
+            icon={<EditIcon />}
+            label='Edit'
+            className='textPrimary'
+            onClick={handleEditClick(id)}
+            color='inherit'
+          />,
+          <GridActionsCellItem
+            key='2'
+            icon={<DeleteIcon />}
+            label='Delete'
+            onClick={() => deleteTask(id)}
+            color='inherit'
+          />,
+        ];
+      },
     },
     // {
     //   field: "age",
@@ -191,6 +330,7 @@ export default function TaskGrid({
 
       if (response.ok) {
         const data = await response.json();
+        setTaskFormData({ date: "", text: "", taskClass: "Power" });
       } else {
         console.error("Failed to sign up");
       }
@@ -311,7 +451,7 @@ export default function TaskGrid({
                 variant='outlined'
                 // Add name attribute to identify the input in handleInputChange
               />
-              <div className='flex justify-between'>
+              <div className='flex justify-center gap-2'>
                 <input
                   className='max-w-48 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 focus:cursor-text block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
                   type='date'
@@ -356,13 +496,12 @@ export default function TaskGrid({
                     </MenuItem>
                   </Select>
                 </FormControl>
-
-                <button
-                  type='submit'
-                  className=' self-center max-w-xs hover:scale-105 align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-4 px-6 rounded-lg bg-gray-900 text-white shadow-md shadow-gray-900/10 hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none'>
-                  Add
-                </button>
               </div>
+              <button
+                type='submit'
+                className=' self-center w-full hover:scale-105 align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-4 px-6 rounded-lg bg-gray-900 text-white shadow-md shadow-gray-900/10 hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none'>
+                Add
+              </button>
             </div>
           </form>
           <div style={{ height: 450, width: "100%" }}>
@@ -370,6 +509,14 @@ export default function TaskGrid({
               getRowId={getRowId}
               rows={tasks}
               columns={columns}
+              editMode='row'
+              rowModesModel={rowModesModel}
+              onRowModesModelChange={handleRowModesModelChange}
+              onRowEditStop={handleRowEditStop}
+              processRowUpdate={processRowUpdate}
+              slotProps={{
+                toolbar: { setTasks, setRowModesModel },
+              }}
               initialState={{
                 pagination: {
                   paginationModel: { page: 0, pageSize: 10 },

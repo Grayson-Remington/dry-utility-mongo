@@ -3,9 +3,7 @@ Dry Utility Project Manager
 Features to Add:
 
 - Edit a row
-
+- pop up or drop down module for adding things
 - styling
-- delete files
+
 - toast notfications
-- loading states
-- change projectNumber to projectId for all grids

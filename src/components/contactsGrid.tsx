@@ -1,4 +1,3 @@
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { FaRegTrashAlt } from "react-icons/fa";
@@ -10,6 +9,25 @@ import {
   Select,
   TextField,
 } from "@mui/material";
+import Button from "@mui/material/Button";
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/DeleteOutlined";
+import SaveIcon from "@mui/icons-material/Save";
+import CancelIcon from "@mui/icons-material/Close";
+import {
+  GridRowsProp,
+  GridRowModesModel,
+  GridRowModes,
+  DataGrid,
+  GridColDef,
+  GridToolbarContainer,
+  GridActionsCellItem,
+  GridEventListener,
+  GridRowId,
+  GridRowModel,
+  GridRowEditStopReasons,
+} from "@mui/x-data-grid";
 
 export default function ContactsGrid({
   contacts,
@@ -18,16 +36,106 @@ export default function ContactsGrid({
 }: any) {
   const { data: session, status } = useSession();
   const confirm = useConfirm();
+
+  const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
+
+  const handleRowEditStop: GridEventListener<"rowEditStop"> = (
+    params,
+    event
+  ) => {
+    if (params.reason === GridRowEditStopReasons.rowFocusOut) {
+      event.defaultMuiPrevented = true;
+    }
+  };
+
+  const handleEditClick = (id: GridRowId) => () => {
+    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
+  };
+
+  const handleSaveClick = (id: GridRowId) => () => {
+    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
+  };
+
+  const handleDeleteClick = (id: GridRowId) => () => {
+    setContacts(contacts.filter((row: any) => row.id !== id));
+  };
+
+  const handleCancelClick = (id: GridRowId) => () => {
+    setRowModesModel({
+      ...rowModesModel,
+      [id]: { mode: GridRowModes.View, ignoreModifications: true },
+    });
+
+    const editedRow = contacts.find((row: any) => row.id === id);
+    if (editedRow!.isNew) {
+      setContacts(contacts.filter((row: any) => row.id !== id));
+    }
+  };
+
+  const processRowUpdate = async (newRow: GridRowModel) => {
+    const updatedRow = { ...newRow };
+    setContacts(
+      contacts.map((row: any) => (row.id === newRow.id ? updatedRow : row))
+    );
+    console.log(updatedRow);
+
+    try {
+      const response = await fetch("/api/updateContact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          projectId: updatedRow.projectId,
+          contactClass: updatedRow.contactClass,
+          name: updatedRow.name,
+          email: updatedRow.email,
+          phoneNumber: updatedRow.phoneNumber,
+          id: updatedRow.id,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data, "update reply");
+      } else {
+        console.error("Failed to sign up");
+      }
+    } catch (error) {
+      console.error("An error occurred:", error);
+    }
+    return updatedRow;
+  };
+
+  const handleRowModesModelChange = (newRowModesModel: GridRowModesModel) => {
+    setRowModesModel(newRowModesModel);
+  };
   const columns: GridColDef[] = [
     {
       field: "name",
+      editable: true,
       headerName: "Name",
       width: 130,
     },
-    { field: "phoneNumber", headerName: "Phone Number", width: 130 },
-    { field: "email", headerName: "Email", width: 130, flex: 1 },
+    {
+      field: "phoneNumber",
+      editable: true,
+      headerName: "Phone Number",
+      width: 130,
+    },
+    {
+      field: "email",
+      type: "email",
+      editable: true,
+      headerName: "Email",
+      width: 130,
+      flex: 1,
+    },
     {
       field: "contactClass",
+      editable: true,
+      type: "singleSelect",
+      valueOptions: ["Power", "Gas", "Telco", "Misc"],
       headerName: "Category",
       width: 100,
       cellClassName: (params) =>
@@ -42,19 +150,56 @@ export default function ContactsGrid({
       headerAlign: "center",
     },
     {
-      field: "delete",
-      headerName: "Delete",
-      width: 70,
-      renderCell: (params) => (
-        <button className='p-2' onClick={() => deleteContact(params.row.id)}>
-          <FaRegTrashAlt />
-        </button>
-      ),
-      disableColumnMenu: true,
-      sortable: false,
-      align: "center",
-      headerAlign: "center",
+      field: "actions",
+      type: "actions",
+      headerName: "Actions",
+      width: 100,
+      cellClassName: "actions",
+      getActions: ({ id }) => {
+        const isInEditMode = rowModesModel[id]?.mode === GridRowModes.Edit;
+
+        if (isInEditMode) {
+          return [
+            <GridActionsCellItem
+              key={1}
+              icon={<SaveIcon />}
+              label='Save'
+              sx={{
+                color: "primary.main",
+              }}
+              onClick={handleSaveClick(id)}
+            />,
+            <GridActionsCellItem
+              key={1}
+              icon={<CancelIcon />}
+              label='Cancel'
+              className='textPrimary'
+              onClick={handleCancelClick(id)}
+              color='inherit'
+            />,
+          ];
+        }
+
+        return [
+          <GridActionsCellItem
+            key='1'
+            icon={<EditIcon />}
+            label='Edit'
+            className='textPrimary'
+            onClick={handleEditClick(id)}
+            color='inherit'
+          />,
+          <GridActionsCellItem
+            key='2'
+            icon={<DeleteIcon />}
+            label='Delete'
+            onClick={() => deleteContact(id)}
+            color='inherit'
+          />,
+        ];
+      },
     },
+
     // {
     //   field: "age",
     //   headerName: "Age",
@@ -161,7 +306,7 @@ export default function ContactsGrid({
       {status === "authenticated" && contacts && (
         <div className='max-w-4xl w-full bg-white rounded-b-lg p-1'>
           <form onSubmit={handleContactSubmit}>
-            <div className='w-full flex items-center gap-2 py-1 border-b border-black'>
+            <div className='hidden w-full sm:flex items-center gap-2 py-1 p-3 border-b border-black'>
               <TextField
                 type='text'
                 name='name' // Add name attribute to identify the input in handleInputChange
@@ -247,12 +392,107 @@ export default function ContactsGrid({
                 Add
               </button>
             </div>
+            <div className='sm:hidden w-full flex flex-col items-center gap-2 py-1 border-b border-black'>
+              <TextField
+                type='text'
+                name='name' // Add name attribute to identify the input in handleInputChange
+                value={contactFormData.name}
+                onChange={handleContactInputChange}
+                required
+                className='border border-black rounded-md w-full'
+                id='name'
+                label='Name'
+                variant='outlined'
+
+                // Add name attribute to identify the input in handleInputChange
+              />
+
+              <TextField
+                type='text'
+                name='email' // Add name attribute to identify the input in handleInputChange
+                value={contactFormData.email}
+                onChange={handleContactInputChange}
+                required
+                className='border border-black rounded-md w-full'
+                id='email'
+                label='Email'
+                variant='outlined'
+
+                // Add name attribute to identify the input in handleInputChange
+              />
+              <div className='flex gap-2'>
+                <TextField
+                  type='text'
+                  name='phoneNumber' // Add name attribute to identify the input in handleInputChange
+                  value={contactFormData.phoneNumber}
+                  onChange={handleContactInputChange}
+                  required
+                  className='border border-black rounded-md w-full'
+                  id='phoneNumber'
+                  label='Phone Number'
+                  variant='outlined'
+
+                  // Add name attribute to identify the input in handleInputChange
+                />
+                <FormControl fullWidth className='group max-w-48 min-w-32'>
+                  <InputLabel id='timelineItemClass-label'>
+                    Timline Item Class
+                  </InputLabel>
+                  <Select
+                    value={contactFormData.contactClass}
+                    onChange={handleContactInputChange}
+                    id='contactClass'
+                    name='contactClass'
+                    labelId='contactClass-label'
+                    label='Contact Class'
+                    className=''>
+                    <MenuItem className='' value='Power'>
+                      <div className='flex justify-between items-center w-full'>
+                        <div>Power</div>
+                        <div className='rounded-full bg-red-500 h-4 w-4'></div>
+                      </div>
+                    </MenuItem>
+                    <MenuItem className='' value='Gas'>
+                      <div className='flex justify-between items-center w-full'>
+                        <div>Gas</div>
+                        <div className='rounded-full bg-yellow-500 h-4 w-4'></div>
+                      </div>
+                    </MenuItem>
+                    <MenuItem className='' value='Telco'>
+                      <div className='flex justify-between items-center w-full'>
+                        <div>Telco</div>
+                        <div className='rounded-full bg-orange-500 h-4 w-4'></div>
+                      </div>
+                    </MenuItem>
+                    <MenuItem className='' value='Misc'>
+                      <div className='flex justify-between items-center w-full'>
+                        <div>Misc</div>
+                        <div className='rounded-full bg-purple-500 h-4 w-4'></div>
+                      </div>
+                    </MenuItem>
+                  </Select>
+                </FormControl>
+              </div>
+              <button
+                type='submit'
+                className='w-full self-center max-w-xs hover:scale-105 align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-4 px-6 rounded-lg bg-gray-900 text-white shadow-md shadow-gray-900/10 hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none'>
+                Add
+              </button>
+            </div>
           </form>
           <div style={{ height: 400, width: "100%" }}>
             <DataGrid
               getRowId={getRowId}
               rows={contacts}
               columns={columns}
+              editMode='row'
+              rowModesModel={rowModesModel}
+              onRowModesModelChange={handleRowModesModelChange}
+              onRowEditStop={handleRowEditStop}
+              processRowUpdate={processRowUpdate}
+              slotProps={{
+                toolbar: { setContacts, setRowModesModel },
+              }}
               initialState={{
                 pagination: {
                   paginationModel: { page: 0, pageSize: 10 },

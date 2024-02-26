@@ -69,7 +69,7 @@ export default function FilesGrid({
       width: 500,
       renderCell: (params) => (
         <Link
-          className='hover:bg-blue-200 hover:font-bold hover:text-lg border w-full text-center border-black p-3 hover:scale-105 transition-transform'
+          className='hover:bg-blue-200 hover:font-bold hover:text-lg border w-full text-center border-gray-300 p-3 hover:scale-105 transition-transform'
           href={{
             pathname: `https://${
               process.env.NEXT_PUBLIC_S3_BUCKET_NAME

@@ -35,7 +35,7 @@ export default function ProjectsGrid({
       renderCell: (params) => (
         <Link
           onClick={() => setLoading(true)}
-          className='hover:bg-blue-200 hover:font-bold hover:text-lg border rounded-lg w-full text-center border-black p-3 hover:scale-105 transition-transform'
+          className='hover:bg-blue-200 hover:font-bold hover:text-lg border border-gray-300 rounded-lg w-full text-center  p-3 hover:scale-105 transition-transform'
           href={{
             pathname: `/${params.row.projectName}`,
             query: {
@@ -70,13 +70,21 @@ export default function ProjectsGrid({
       headerName: "Delete",
       width: 100,
       renderCell: (params) => (
-        <button
-          className='p-2'
-          onClick={() =>
-            deleteProject(params.row.id, params.row.projectNumber)
-          }>
-          <FaRegTrashAlt />
-        </button>
+        <>
+          {params.row.users.find(
+            (user: any) => user.email === session?.user?.email
+          ).role === "admin" ? (
+            <button
+              className='p-2'
+              onClick={() =>
+                deleteProject(params.row.id, params.row.projectNumber)
+              }>
+              <FaRegTrashAlt />
+            </button>
+          ) : (
+            <div></div>
+          )}
+        </>
       ),
       disableColumnMenu: true,
       sortable: false,

@@ -1,4 +1,3 @@
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { FaRegTrashAlt } from "react-icons/fa";
@@ -11,6 +10,26 @@ import {
   Select,
   TextField,
 } from "@mui/material";
+import Button from "@mui/material/Button";
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/DeleteOutlined";
+import SaveIcon from "@mui/icons-material/Save";
+import CancelIcon from "@mui/icons-material/Close";
+import {
+  GridRowsProp,
+  GridRowModesModel,
+  GridRowModes,
+  DataGrid,
+  GridColDef,
+  GridToolbarContainer,
+  GridActionsCellItem,
+  GridEventListener,
+  GridRowId,
+  GridRowModel,
+  GridRowEditStopReasons,
+  GridValueSetterParams,
+} from "@mui/x-data-grid";
 import toast, { Toaster } from "react-hot-toast";
 export default function AllTasksGrid({ tasks, setTasks, projects }: any) {
   const { data: session, status } = useSession();
@@ -85,21 +104,114 @@ export default function AllTasksGrid({ tasks, setTasks, projects }: any) {
       children: `${name.split(" ")[0][0]}${name.split(" ")[1][0]}`,
     };
   }
+
+  const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
+
+  const handleRowEditStop: GridEventListener<"rowEditStop"> = (
+    params,
+    event
+  ) => {
+    if (params.reason === GridRowEditStopReasons.rowFocusOut) {
+      event.defaultMuiPrevented = true;
+    }
+  };
+
+  const handleEditClick = (id: GridRowId) => () => {
+    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
+  };
+
+  const handleSaveClick = (id: GridRowId) => () => {
+    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
+  };
+
+  const handleDeleteClick = (id: GridRowId) => () => {
+    setTasks(tasks.filter((row: any) => row.id !== id));
+  };
+
+  const handleCancelClick = (id: GridRowId) => () => {
+    setRowModesModel({
+      ...rowModesModel,
+      [id]: { mode: GridRowModes.View, ignoreModifications: true },
+    });
+
+    const editedRow = tasks.find((row: any) => row.id === id);
+    if (editedRow!.isNew) {
+      setTasks(tasks.filter((row: any) => row.id !== id));
+    }
+  };
+
+  const processRowUpdate = async (newRow: GridRowModel) => {
+    const updatedRow = { ...newRow };
+    setTasks(
+      tasks.map((row: any) => (row.id === newRow.id ? updatedRow : row))
+    );
+    console.log(updatedRow);
+    console.log(
+      projects.find(
+        (project: any) => updatedRow.projectName === project.projectName
+      )?.id,
+      "id"
+    );
+    try {
+      const response = await fetch("/api/updateTask", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          author: session?.user?.name,
+          projectName: updatedRow.projectName,
+          projectId:
+            projects.find(
+              (project: any) => updatedRow.projectName === project.projectName
+            )?.id || "",
+          taskClass: updatedRow.taskClass,
+          date: updatedRow.date.toString(),
+          text: updatedRow.text,
+          id: updatedRow.id,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data, "update reply");
+      } else {
+        console.error("Failed to sign up");
+      }
+    } catch (error) {
+      console.error("An error occurred:", error);
+    }
+    return updatedRow;
+  };
+
+  const handleRowModesModelChange = (newRowModesModel: GridRowModesModel) => {
+    setRowModesModel(newRowModesModel);
+  };
+
   const columns: GridColDef[] = [
     {
       field: "date",
+      type: "date",
+      editable: true,
       headerName: "Date",
       width: 100,
-      renderCell: (params) => <div>{formatDate(params.row.date)}</div>,
+      valueGetter: (params) => {
+        return new Date(params.row.date);
+      },
     },
 
     {
       field: "projectName",
+      editable: true,
+      type: "singleSelect",
+      valueOptions: projects.map((project: any) => project.projectName),
+
       headerName: "Project Number",
       width: 130,
     },
     {
       field: "text",
+      editable: true,
       headerName: "Tasks",
       width: 300,
       flex: 1,
@@ -107,6 +219,9 @@ export default function AllTasksGrid({ tasks, setTasks, projects }: any) {
     },
     {
       field: "taskClass",
+      editable: true,
+      type: "singleSelect",
+      valueOptions: ["Power", "Gas", "Telco", "Misc"],
       headerName: "Category",
       width: 100,
       cellClassName: (params) =>
@@ -136,20 +251,54 @@ export default function AllTasksGrid({ tasks, setTasks, projects }: any) {
       headerAlign: "center",
     },
     {
-      field: "delete",
-      headerName: "Delete",
-      width: 80,
+      field: "actions",
+      type: "actions",
+      headerName: "Actions",
+      width: 100,
+      cellClassName: "actions",
+      getActions: ({ id }) => {
+        const isInEditMode = rowModesModel[id]?.mode === GridRowModes.Edit;
 
-      renderCell: (params) => (
-        <button className='p-2' onClick={() => deleteTask(params.row.id)}>
-          <FaRegTrashAlt />
-        </button>
-      ),
+        if (isInEditMode) {
+          return [
+            <GridActionsCellItem
+              key={1}
+              icon={<SaveIcon />}
+              label='Save'
+              sx={{
+                color: "primary.main",
+              }}
+              onClick={handleSaveClick(id)}
+            />,
+            <GridActionsCellItem
+              key={1}
+              icon={<CancelIcon />}
+              label='Cancel'
+              className='textPrimary'
+              onClick={handleCancelClick(id)}
+              color='inherit'
+            />,
+          ];
+        }
 
-      disableColumnMenu: true,
-      sortable: false,
-      align: "center",
-      headerAlign: "center",
+        return [
+          <GridActionsCellItem
+            key='1'
+            icon={<EditIcon />}
+            label='Edit'
+            className='textPrimary'
+            onClick={handleEditClick(id)}
+            color='inherit'
+          />,
+          <GridActionsCellItem
+            key='2'
+            icon={<DeleteIcon />}
+            label='Delete'
+            onClick={() => deleteTask(id)}
+            color='inherit'
+          />,
+        ];
+      },
     },
 
     // {
@@ -353,6 +502,14 @@ export default function AllTasksGrid({ tasks, setTasks, projects }: any) {
               getRowId={getRowId}
               rows={tasks}
               columns={columns}
+              editMode='row'
+              rowModesModel={rowModesModel}
+              onRowModesModelChange={handleRowModesModelChange}
+              onRowEditStop={handleRowEditStop}
+              processRowUpdate={processRowUpdate}
+              slotProps={{
+                toolbar: { setTasks, setRowModesModel },
+              }}
               initialState={{
                 pagination: {
                   paginationModel: { page: 0, pageSize: 30 },
