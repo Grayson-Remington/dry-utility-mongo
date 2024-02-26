@@ -160,7 +160,7 @@ export default function TimelineGrid({
       editable: true,
       width: 130,
       valueGetter: (params) => {
-        return new Date(params.row.date.replace(/-/g, "/").replace(/T.+/, ""));
+        return new Date(params.row.date);
       },
     },
     {

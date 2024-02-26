@@ -149,7 +149,6 @@ export default function TaskGrid({
       tasks.map((row: any) => (row.id === newRow.id ? updatedRow : row))
     );
     console.log(updatedRow);
-
     try {
       const response = await fetch("/api/updateTask", {
         method: "POST",
@@ -161,7 +160,7 @@ export default function TaskGrid({
           projectName: updatedRow.projectName,
           projectId: updatedRow.projectId,
           taskClass: updatedRow.taskClass,
-          date: updatedRow.date.toString(),
+          date: updatedRow.date,
           text: updatedRow.text,
           id: updatedRow.id,
         }),
@@ -191,7 +190,7 @@ export default function TaskGrid({
       headerName: "Date",
       width: 130,
       valueGetter: (params) => {
-        return new Date(params.row.date.replace(/-/g, "/").replace(/T.+/, ""));
+        return new Date(params.row.date);
       },
     },
     {
@@ -351,7 +350,6 @@ export default function TaskGrid({
       ...prevData,
       [name]: value,
     }));
-    console.log(value);
   };
   const handleTaskSubmit = (e: any) => {
     e.preventDefault();

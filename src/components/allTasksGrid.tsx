@@ -196,7 +196,7 @@ export default function AllTasksGrid({ tasks, setTasks, projects }: any) {
       headerName: "Date",
       width: 100,
       valueGetter: (params) => {
-        return new Date(params.row.date.replace(/-/g, "/").replace(/T.+/, ""));
+        return new Date(params.row.date);
       },
     },
 
