@@ -554,6 +554,9 @@ export default function TimelineGrid({
               </button>
             </div>
           </form>
+          {selectedRows.length >= 1 && (
+            <Button onClick={handleDeleteRows}>Delete Selected Rows</Button>
+          )}
           <div style={{ height: 450, width: "100%" }}>
             <DataGrid
               getRowId={getRowId}
