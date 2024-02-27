@@ -28,6 +28,7 @@ import {
   GridRowId,
   GridRowModel,
   GridRowEditStopReasons,
+  GridRowSelectionModel,
 } from "@mui/x-data-grid";
 export default function TimelineGrid({
   timelineItems,
@@ -374,6 +375,45 @@ export default function TimelineGrid({
     // Update the state by creating a new array with the new item
     setTimelineItems((prevData: any) => [...prevData, newItem]);
   };
+  const [selectedRows, setSelectedRows] = useState<GridRowId[]>([]);
+  const [rowSelectionModel, setRowSelectionModel] =
+    useState<GridRowSelectionModel>([]);
+  const handleSelectionChange = (newSelection: any) => {
+    setSelectedRows(newSelection.selectionModel);
+  };
+
+  const handleDeleteRows = async () => {
+    const filteredIds = timelineItems.filter(
+      (task: any) => !selectedRows.includes(task.id)
+    );
+    confirm({ description: "This action is permanent!" })
+      .then(async () => {
+        try {
+          const response = await fetch("/api/deleteManyTimelineItems", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ ids: selectedRows }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            setTimelineItems(filteredIds);
+            console.log(data);
+          } else {
+            console.error("Failed to sign up");
+          }
+        } catch (error) {
+          console.error("An error occurred:", error);
+        }
+      })
+      .catch(() => {
+        /* ... */
+      });
+    // Implement your delete logic here using selectedRows
+    console.log("Selected rows to delete:", selectedRows);
+  };
   return (
     <>
       {status === "authenticated" && timelineItems && (
@@ -520,6 +560,13 @@ export default function TimelineGrid({
               rows={timelineItems}
               columns={columns}
               editMode='row'
+              checkboxSelection
+              onRowSelectionModelChange={(
+                newRowSelectionModel: GridRowSelectionModel
+              ) => {
+                setRowSelectionModel(newRowSelectionModel);
+                setSelectedRows(newRowSelectionModel as GridRowId[]);
+              }}
               rowModesModel={rowModesModel}
               onRowModesModelChange={handleRowModesModelChange}
               onRowEditStop={handleRowEditStop}
