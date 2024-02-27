@@ -29,6 +29,7 @@ import {
   GridRowId,
   GridRowModel,
   GridRowEditStopReasons,
+  GridRowSelectionModel,
 } from "@mui/x-data-grid";
 
 export default function TaskGrid({
@@ -190,7 +191,18 @@ export default function TaskGrid({
       headerName: "Date",
       width: 130,
       valueGetter: (params) => {
-        return new Date(params.row.date);
+        let date = new Date(params.row.date);
+
+        // Adjust the time to UTC time zone
+        date.setUTCHours(5);
+        date.setUTCMinutes(0);
+        date.setUTCSeconds(0);
+        date.setUTCMilliseconds(0);
+
+        // Format the date string
+        let formattedDateStr = date.toISOString();
+
+        return new Date(formattedDateStr);
       },
     },
     {
@@ -367,6 +379,43 @@ export default function TaskGrid({
     // Update the state by creating a new array with the new item
     setTasks((prevData: any) => [...prevData, newItem]);
   };
+  const [selectedRows, setSelectedRows] = useState<GridRowId[]>([]);
+  const [rowSelectionModel, setRowSelectionModel] =
+    useState<GridRowSelectionModel>([]);
+  const handleSelectionChange = (newSelection) => {
+    setSelectedRows(newSelection.selectionModel);
+  };
+
+  const handleDeleteRows = async () => {
+    const filteredIds = tasks.filter((task) => !selectedRows.includes(task.id));
+    confirm({ description: "This action is permanent!" })
+      .then(async () => {
+        try {
+          const response = await fetch("/api/deleteManyTasks", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ ids: selectedRows }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            setTasks(filteredIds);
+            console.log(data);
+          } else {
+            console.error("Failed to sign up");
+          }
+        } catch (error) {
+          console.error("An error occurred:", error);
+        }
+      })
+      .catch(() => {
+        /* ... */
+      });
+    // Implement your delete logic here using selectedRows
+    console.log("Selected rows to delete:", selectedRows);
+  };
   return (
     <>
       {status === "authenticated" && tasks && (
@@ -503,11 +552,23 @@ export default function TaskGrid({
               </button>
             </div>
           </form>
+          {selectedRows.length >= 1 && (
+            <Button onClick={handleDeleteRows}>Delete Selected Rows</Button>
+          )}
+
           <div style={{ height: 450, width: "100%" }}>
             <DataGrid
               getRowId={getRowId}
               rows={tasks}
               columns={columns}
+              checkboxSelection
+              onRowSelectionModelChange={(
+                newRowSelectionModel: GridRowSelectionModel
+              ) => {
+                setRowSelectionModel(newRowSelectionModel);
+                setSelectedRows(newRowSelectionModel as GridRowId[]);
+              }}
+              rowSelectionModel={rowSelectionModel}
               editMode='row'
               rowModesModel={rowModesModel}
               onRowModesModelChange={handleRowModesModelChange}

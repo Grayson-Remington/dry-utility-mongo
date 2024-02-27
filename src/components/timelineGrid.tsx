@@ -160,7 +160,18 @@ export default function TimelineGrid({
       editable: true,
       width: 130,
       valueGetter: (params) => {
-        return new Date(params.row.date);
+        let date = new Date(params.row.date);
+
+        // Adjust the time to UTC time zone
+        date.setUTCHours(5);
+        date.setUTCMinutes(0);
+        date.setUTCSeconds(0);
+        date.setUTCMilliseconds(0);
+
+        // Format the date string
+        let formattedDateStr = date.toISOString();
+
+        return new Date(formattedDateStr);
       },
     },
     {
@@ -294,6 +305,11 @@ export default function TimelineGrid({
 
       if (response.ok) {
         const data = await response.json();
+        setTimelineItemFormData({
+          date: "",
+          text: "",
+          timelineItemClass: "Power",
+        });
       } else {
         console.error("Failed to sign up");
       }

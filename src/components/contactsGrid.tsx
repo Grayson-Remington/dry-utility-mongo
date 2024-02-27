@@ -238,6 +238,12 @@ export default function ContactsGrid({
 
       if (response.ok) {
         const data = await response.json();
+        setContactFormData({
+          name: "",
+          email: "",
+          phoneNumber: "",
+          contactClass: "Power",
+        });
       } else {
         console.error("Failed to sign up");
       }
