@@ -382,12 +382,14 @@ export default function TaskGrid({
   const [selectedRows, setSelectedRows] = useState<GridRowId[]>([]);
   const [rowSelectionModel, setRowSelectionModel] =
     useState<GridRowSelectionModel>([]);
-  const handleSelectionChange = (newSelection) => {
+  const handleSelectionChange = (newSelection: any) => {
     setSelectedRows(newSelection.selectionModel);
   };
 
   const handleDeleteRows = async () => {
-    const filteredIds = tasks.filter((task) => !selectedRows.includes(task.id));
+    const filteredIds = tasks.filter(
+      (task: any) => !selectedRows.includes(task.id)
+    );
     confirm({ description: "This action is permanent!" })
       .then(async () => {
         try {
