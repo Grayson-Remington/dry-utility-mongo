@@ -31,6 +31,51 @@ import {
   GridValueSetterParams,
 } from "@mui/x-data-grid";
 import toast, { Toaster } from "react-hot-toast";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+
+import { styled } from "@mui/material/styles";
+import ArrowForwardIosSharpIcon from "@mui/icons-material/ArrowForwardIosSharp";
+import MuiAccordion, { AccordionProps } from "@mui/material/Accordion";
+import MuiAccordionSummary, {
+  AccordionSummaryProps,
+} from "@mui/material/AccordionSummary";
+import MuiAccordionDetails from "@mui/material/AccordionDetails";
+import Typography from "@mui/material/Typography";
+
+const Accordion = styled((props: AccordionProps) => (
+  <MuiAccordion disableGutters elevation={0} square {...props} />
+))(({ theme }) => ({
+  border: `1px solid ${theme.palette.divider}`,
+  "&:not(:last-child)": {
+    borderBottom: 0,
+  },
+  "&::before": {
+    display: "none",
+  },
+}));
+
+const AccordionSummary = styled((props: AccordionSummaryProps) => (
+  <MuiAccordionSummary
+    expandIcon={<ArrowForwardIosSharpIcon sx={{ fontSize: "0.9rem" }} />}
+    {...props}
+  />
+))(({ theme }) => ({
+  backgroundColor:
+    theme.palette.mode === "dark"
+      ? "rgba(255, 255, 255, .05)"
+      : "rgba(0, 0, 0, .03)",
+  "& .MuiAccordionSummary-expandIconWrapper.Mui-expanded": {},
+  "& .MuiAccordionSummary-content": {
+    flexGrow: 0,
+    justifyContent: "center",
+    marginLeft: theme.spacing(1),
+  },
+}));
+
+const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
+  padding: theme.spacing(2),
+  borderTop: "1px solid rgba(0, 0, 0, .125)",
+}));
 export default function AllTasksGrid({ tasks, setTasks, projects }: any) {
   const { data: session, status } = useSession();
   const confirm = useConfirm();
@@ -353,6 +398,15 @@ export default function AllTasksGrid({ tasks, setTasks, projects }: any) {
       if (response.ok) {
         const data = await response.json();
         toast.success("Successfully added Task");
+        setTasks((prevData: any) => [...prevData, newItem]);
+
+        setTaskFormData({
+          date: "",
+          text: "",
+          taskClass: "Power",
+          projectId: "",
+          projectName: "",
+        });
       } else {
         console.error("Failed to sign up");
         toast.error("Unable to add Task");
@@ -401,113 +455,227 @@ export default function AllTasksGrid({ tasks, setTasks, projects }: any) {
     };
     addTask(newItem);
     // Update the state by creating a new array with the new item
-    setTasks((prevData: any) => [...prevData, newItem]);
   };
   return (
     <>
-      <div>
-        <Toaster />
-      </div>
       {status === "authenticated" && tasks && (
         <div className=' max-w-4xl w-full bg-white rounded-lg p-3'>
-          <form onSubmit={handleTaskSubmit}>
-            <div className='p-3 w-full flex gap-2 py-1 border-black flex-col md:flex-row'>
-              <div className='w-full flex gap-2'>
-                <input
-                  className='max-w-48 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 focus:cursor-text block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
-                  type='date'
-                  name='date' // Add name attribute to identify the input in handleInputChange
-                  value={taskFormData.date}
-                  onChange={handleTaskInputChange}
-                  required
-                />
+          <Accordion>
+            <AccordionSummary
+              sx={{
+                root: {
+                  flexDirection: "column",
+                },
+                content: {
+                  marginBottom: 0,
+                },
+                expandIcon: {
+                  marginRight: 0,
+                  paddingTop: 0,
+                },
+              }}
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls='panel1-content'
+              id='panel1-header'>
+              Add Task
+            </AccordionSummary>
+            <AccordionDetails>
+              <form onSubmit={handleTaskSubmit}>
+                <div className='hidden p-3 w-full md:flex gap-2 py-1 border-black flex-row'>
+                  <div className='w-full flex gap-2'>
+                    <input
+                      className='max-w-48 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 focus:cursor-text block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
+                      type='date'
+                      name='date' // Add name attribute to identify the input in handleInputChange
+                      value={taskFormData.date}
+                      onChange={handleTaskInputChange}
+                      required
+                    />
 
-                <TextField
-                  type='text'
-                  name='text' // Add name attribute to identify the input in handleInputChange
-                  value={taskFormData.text}
-                  onChange={handleTaskInputChange}
-                  className='border border-black rounded-md w-full'
-                  required
-                  id='text'
-                  label='Task'
-                  variant='outlined'
-                  // Add name attribute to identify the input in handleInputChange
-                />
-              </div>
-              <div className='w-full flex gap-3'>
-                <FormControl fullWidth className=''>
-                  <InputLabel id='projectNumber-label'>
-                    Project Number
-                  </InputLabel>
-                  <Select
-                    required
-                    labelId='projectNumber-label'
-                    value={JSON.stringify({
-                      projectId: taskFormData.projectId,
-                      projectName: taskFormData.projectName,
-                    })}
-                    onChange={handleProjectNameInputChange}
-                    id='projectId'
-                    name='projectId'
-                    label='Project Number'>
-                    {projects.map((project: any) => (
-                      <MenuItem
-                        key={project.id}
+                    <TextField
+                      type='text'
+                      name='text' // Add name attribute to identify the input in handleInputChange
+                      value={taskFormData.text}
+                      onChange={handleTaskInputChange}
+                      className='border border-black rounded-md w-full'
+                      required
+                      id='text'
+                      label='Task'
+                      variant='outlined'
+                      // Add name attribute to identify the input in handleInputChange
+                    />
+                  </div>
+                  <div className='w-full flex gap-3'>
+                    <FormControl fullWidth className=''>
+                      <InputLabel id='projectNumber-label'>
+                        Project Number
+                      </InputLabel>
+                      <Select
+                        required
+                        labelId='projectNumber-label'
                         value={JSON.stringify({
-                          projectId: project.id.toString(),
-                          projectName: project.projectName,
-                        })}>
-                        {project.projectName}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <FormControl fullWidth className='group w-44 '>
-                  <InputLabel id='taskClass-label'>Task Class</InputLabel>
-                  <Select
-                    labelId='taskClass-label'
-                    value={taskFormData.taskClass}
-                    onChange={handleTaskInputChange}
-                    id='taskClass'
-                    name='taskClass'
-                    label='To do Class'
-                    className=''>
-                    <MenuItem className='' value='Power'>
-                      <div className='flex justify-between items-center w-full'>
-                        <div>Power</div>
-                        <div className='rounded-full bg-red-500 h-4 w-4'></div>
-                      </div>
-                    </MenuItem>
-                    <MenuItem className='' value='Gas'>
-                      <div className='flex justify-between items-center w-full'>
-                        <div>Gas</div>
-                        <div className='rounded-full bg-yellow-500 h-4 w-4'></div>
-                      </div>
-                    </MenuItem>
-                    <MenuItem className='' value='Telco'>
-                      <div className='flex justify-between items-center w-full'>
-                        <div>Telco</div>
-                        <div className='rounded-full bg-orange-500 h-4 w-4'></div>
-                      </div>
-                    </MenuItem>
-                    <MenuItem className='' value='Misc'>
-                      <div className='flex justify-between items-center w-full'>
-                        <div>Misc</div>
-                        <div className='rounded-full bg-purple-500 h-4 w-4'></div>
-                      </div>
-                    </MenuItem>
-                  </Select>
-                </FormControl>
+                          projectId: taskFormData.projectId,
+                          projectName: taskFormData.projectName,
+                        })}
+                        onChange={handleProjectNameInputChange}
+                        id='projectId'
+                        name='projectId'
+                        label='Project Number'>
+                        {projects.map((project: any) => (
+                          <MenuItem
+                            key={project.id}
+                            value={JSON.stringify({
+                              projectId: project.id.toString(),
+                              projectName: project.projectName,
+                            })}>
+                            {project.projectName}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                    <FormControl fullWidth className='group w-44 min-w-32'>
+                      <InputLabel id='taskClass-label'>Task Class</InputLabel>
+                      <Select
+                        labelId='taskClass-label'
+                        value={taskFormData.taskClass}
+                        onChange={handleTaskInputChange}
+                        id='taskClass'
+                        name='taskClass'
+                        label='To do Class'
+                        className=''>
+                        <MenuItem className='' value='Power'>
+                          <div className='flex justify-between items-center w-full'>
+                            <div>Power</div>
+                            <div className='rounded-full bg-red-500 h-4 w-4'></div>
+                          </div>
+                        </MenuItem>
+                        <MenuItem className='' value='Gas'>
+                          <div className='flex justify-between items-center w-full'>
+                            <div>Gas</div>
+                            <div className='rounded-full bg-yellow-500 h-4 w-4'></div>
+                          </div>
+                        </MenuItem>
+                        <MenuItem className='' value='Telco'>
+                          <div className='flex justify-between items-center w-full'>
+                            <div>Telco</div>
+                            <div className='rounded-full bg-orange-500 h-4 w-4'></div>
+                          </div>
+                        </MenuItem>
+                        <MenuItem className='' value='Misc'>
+                          <div className='flex justify-between items-center w-full'>
+                            <div>Misc</div>
+                            <div className='rounded-full bg-purple-500 h-4 w-4'></div>
+                          </div>
+                        </MenuItem>
+                      </Select>
+                    </FormControl>
 
-                <button
-                  type='submit'
-                  className=' self-center max-w-xs hover:scale-105 align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-4 px-6 rounded-lg bg-gray-900 text-white shadow-md shadow-gray-900/10 hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none'>
-                  Add
-                </button>
-              </div>
-            </div>
-          </form>
+                    <button
+                      type='submit'
+                      className=' self-center max-w-xs hover:scale-105 align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-4 px-6 rounded-lg bg-gray-900 text-white shadow-md shadow-gray-900/10 hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none'>
+                      Add
+                    </button>
+                  </div>
+                </div>
+                <div className='md:hidden p-3 w-full flex gap-2 py-1 border-black flex-col md:flex-row'>
+                  <div className='w-full flex gap-2'>
+                    <input
+                      className='max-w-48 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 focus:cursor-text block ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
+                      type='date'
+                      name='date' // Add name attribute to identify the input in handleInputChange
+                      value={taskFormData.date}
+                      onChange={handleTaskInputChange}
+                      required
+                    />
+
+                    <TextField
+                      type='text'
+                      name='text' // Add name attribute to identify the input in handleInputChange
+                      value={taskFormData.text}
+                      onChange={handleTaskInputChange}
+                      className='border border-black rounded-md w-full'
+                      required
+                      id='text'
+                      label='Task'
+                      variant='outlined'
+                      // Add name attribute to identify the input in handleInputChange
+                    />
+                  </div>
+                  <div className=' w-full flex gap-3'>
+                    <FormControl fullWidth className=''>
+                      <InputLabel id='projectNumber-label'>
+                        Project Number
+                      </InputLabel>
+                      <Select
+                        required
+                        labelId='projectNumber-label'
+                        value={JSON.stringify({
+                          projectId: taskFormData.projectId,
+                          projectName: taskFormData.projectName,
+                        })}
+                        onChange={handleProjectNameInputChange}
+                        id='projectId'
+                        name='projectId'
+                        label='Project Number'>
+                        {projects.map((project: any) => (
+                          <MenuItem
+                            key={project.id}
+                            value={JSON.stringify({
+                              projectId: project.id.toString(),
+                              projectName: project.projectName,
+                            })}>
+                            {project.projectName}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                    <FormControl fullWidth className='group w-44 min-w-32'>
+                      <InputLabel id='taskClass-label'>Task Class</InputLabel>
+                      <Select
+                        labelId='taskClass-label'
+                        value={taskFormData.taskClass}
+                        onChange={handleTaskInputChange}
+                        id='taskClass'
+                        name='taskClass'
+                        label='To do Class'
+                        className=''>
+                        <MenuItem className='' value='Power'>
+                          <div className='flex justify-between items-center w-full'>
+                            <div>Power</div>
+                            <div className='rounded-full bg-red-500 h-4 w-4'></div>
+                          </div>
+                        </MenuItem>
+                        <MenuItem className='' value='Gas'>
+                          <div className='flex justify-between items-center w-full'>
+                            <div>Gas</div>
+                            <div className='rounded-full bg-yellow-500 h-4 w-4'></div>
+                          </div>
+                        </MenuItem>
+                        <MenuItem className='' value='Telco'>
+                          <div className='flex justify-between items-center w-full'>
+                            <div>Telco</div>
+                            <div className='rounded-full bg-orange-500 h-4 w-4'></div>
+                          </div>
+                        </MenuItem>
+                        <MenuItem className='' value='Misc'>
+                          <div className='flex justify-between items-center w-full'>
+                            <div>Misc</div>
+                            <div className='rounded-full bg-purple-500 h-4 w-4'></div>
+                          </div>
+                        </MenuItem>
+                      </Select>
+                    </FormControl>
+                  </div>
+                  <button
+                    type='submit'
+                    className='w-full self-center max-w-xs hover:scale-105 align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-4 px-6 rounded-lg bg-gray-900 text-white shadow-md shadow-gray-900/10 hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none'>
+                    Add
+                  </button>
+                </div>
+              </form>
+            </AccordionDetails>
+          </Accordion>
+
           <div style={{ height: 450, width: "100%" }}>
             <DataGrid
               getRowId={getRowId}

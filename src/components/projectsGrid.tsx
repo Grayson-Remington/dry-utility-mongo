@@ -6,6 +6,51 @@ import { useConfirm } from "material-ui-confirm";
 import Link from "next/link";
 import { TextField } from "@mui/material";
 import toast, { Toaster } from "react-hot-toast";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+
+import { styled } from "@mui/material/styles";
+import ArrowForwardIosSharpIcon from "@mui/icons-material/ArrowForwardIosSharp";
+import MuiAccordion, { AccordionProps } from "@mui/material/Accordion";
+import MuiAccordionSummary, {
+  AccordionSummaryProps,
+} from "@mui/material/AccordionSummary";
+import MuiAccordionDetails from "@mui/material/AccordionDetails";
+import Typography from "@mui/material/Typography";
+
+const Accordion = styled((props: AccordionProps) => (
+  <MuiAccordion disableGutters elevation={0} square {...props} />
+))(({ theme }) => ({
+  border: `1px solid ${theme.palette.divider}`,
+  "&:not(:last-child)": {
+    borderBottom: 0,
+  },
+  "&::before": {
+    display: "none",
+  },
+}));
+
+const AccordionSummary = styled((props: AccordionSummaryProps) => (
+  <MuiAccordionSummary
+    expandIcon={<ArrowForwardIosSharpIcon sx={{ fontSize: "0.9rem" }} />}
+    {...props}
+  />
+))(({ theme }) => ({
+  backgroundColor:
+    theme.palette.mode === "dark"
+      ? "rgba(255, 255, 255, .05)"
+      : "rgba(0, 0, 0, .03)",
+  "& .MuiAccordionSummary-expandIconWrapper.Mui-expanded": {},
+  "& .MuiAccordionSummary-content": {
+    flexGrow: 0,
+    justifyContent: "center",
+    marginLeft: theme.spacing(1),
+  },
+}));
+
+const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
+  padding: theme.spacing(2),
+  borderTop: "1px solid rgba(0, 0, 0, .125)",
+}));
 export default function ProjectsGrid({
   projects,
   setProjects,
@@ -128,10 +173,17 @@ export default function ProjectsGrid({
 
       if (response.ok) {
         const data = await response.json();
-        toast.success("Successfully added Project");
+
+        toast.success("Successfully added project");
+        setProjects((prevData: any) => [...prevData, newItem]);
+
+        setProjectFormData({
+          projectNumber: "",
+          projectName: "",
+        });
       } else {
         console.error("Failed to sign up");
-        toast.error("Unable to add Project");
+        toast.error("Failed to add project");
       }
     } catch (error) {
       console.error("An error occurred:", error);
@@ -152,10 +204,10 @@ export default function ProjectsGrid({
           if (response.ok) {
             const data = await response.json();
             setProjects(projects!.filter((obj: any) => obj.id !== id));
-            toast.success("Successfully deleted Project");
+            toast.success("Successfully deleted project");
           } else {
             console.error("Failed to sign up");
-            toast.success("Unable to delete Project");
+            toast.success("Failed to delete project");
           }
         } catch (error) {
           console.error("An error occurred:", error);
@@ -187,43 +239,64 @@ export default function ProjectsGrid({
     };
     addProject(newItem);
     // Update the state by creating a new array with the new item
-    setProjects((prevData: any) => [...prevData, newItem]);
   };
   return (
     <>
-      <Toaster />
       {status === "authenticated" && projects && (
         <div className='max-w-4xl bg-white rounded-lg w-full p-1'>
-          <form onSubmit={handleProjectSubmit}>
-            <div className='w-full flex gap-2 p-1 border-black'>
-              <TextField
-                id='outlined-basic'
-                label='Project Name'
-                variant='outlined'
-                name='projectName' // Add name attribute to identify the input in handleInputChange
-                value={projectFormData.projectName}
-                onChange={handleProjectInputChange}
-                required
-                className='border border-black rounded-md w-full'
-              />
-              <TextField
-                id='outlined-basic'
-                label='Project Number'
-                variant='outlined'
-                name='projectNumber' // Add name attribute to identify the input in handleInputChange
-                value={projectFormData.projectNumber}
-                onChange={handleProjectInputChange}
-                required
-                className='border border-black rounded-md w-full'
-              />
+          <Accordion>
+            <AccordionSummary
+              sx={{
+                root: {
+                  flexDirection: "column",
+                },
+                content: {
+                  marginBottom: 0,
+                },
+                expandIcon: {
+                  marginRight: 0,
+                  paddingTop: 0,
+                },
+              }}
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls='panel1-content'
+              id='panel1-header'>
+              Add Project
+            </AccordionSummary>
+            <AccordionDetails>
+              <form onSubmit={handleProjectSubmit}>
+                <div className='w-full flex gap-2 p-1 border-black'>
+                  <TextField
+                    id='outlined-basic'
+                    label='Project Name'
+                    variant='outlined'
+                    name='projectName' // Add name attribute to identify the input in handleInputChange
+                    value={projectFormData.projectName}
+                    onChange={handleProjectInputChange}
+                    required
+                    className='border border-black rounded-md w-full'
+                  />
+                  <TextField
+                    id='outlined-basic'
+                    label='Project Number'
+                    variant='outlined'
+                    name='projectNumber' // Add name attribute to identify the input in handleInputChange
+                    value={projectFormData.projectNumber}
+                    onChange={handleProjectInputChange}
+                    required
+                    className='border border-black rounded-md w-full'
+                  />
 
-              <button
-                type='submit'
-                className=' hover:scale-105 align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg bg-gray-900 text-white shadow-md shadow-gray-900/10 hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none'>
-                Add
-              </button>
-            </div>
-          </form>
+                  <button
+                    type='submit'
+                    className=' hover:scale-105 align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-3 px-6 rounded-lg bg-gray-900 text-white shadow-md shadow-gray-900/10 hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none'>
+                    Add
+                  </button>
+                </div>
+              </form>
+            </AccordionDetails>
+          </Accordion>
+
           <div style={{ height: 500, width: "100%" }}>
             {projects && (
               <DataGrid

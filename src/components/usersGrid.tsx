@@ -12,6 +12,52 @@ import {
   TextField,
 } from "@mui/material";
 import { Toaster } from "react-hot-toast";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+
+import { styled } from "@mui/material/styles";
+import ArrowForwardIosSharpIcon from "@mui/icons-material/ArrowForwardIosSharp";
+import MuiAccordion, { AccordionProps } from "@mui/material/Accordion";
+import MuiAccordionSummary, {
+  AccordionSummaryProps,
+} from "@mui/material/AccordionSummary";
+import MuiAccordionDetails from "@mui/material/AccordionDetails";
+import Typography from "@mui/material/Typography";
+
+const Accordion = styled((props: AccordionProps) => (
+  <MuiAccordion disableGutters elevation={0} square {...props} />
+))(({ theme }) => ({
+  border: `1px solid ${theme.palette.divider}`,
+  "&:not(:last-child)": {
+    borderBottom: 0,
+  },
+  "&::before": {
+    display: "none",
+  },
+}));
+
+const AccordionSummary = styled((props: AccordionSummaryProps) => (
+  <MuiAccordionSummary
+    expandIcon={<ArrowForwardIosSharpIcon sx={{ fontSize: "0.9rem" }} />}
+    {...props}
+  />
+))(({ theme }) => ({
+  backgroundColor:
+    theme.palette.mode === "dark"
+      ? "rgba(255, 255, 255, .05)"
+      : "rgba(0, 0, 0, .03)",
+  "& .MuiAccordionSummary-expandIconWrapper.Mui-expanded": {},
+  "& .MuiAccordionSummary-content": {
+    flexGrow: 0,
+    justifyContent: "center",
+    marginLeft: theme.spacing(1),
+  },
+}));
+
+const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
+  padding: theme.spacing(2),
+  borderTop: "1px solid rgba(0, 0, 0, .125)",
+}));
+
 export default function UsersGrid({ users, setUsers, projectId }: any) {
   const { data: session, status } = useSession();
   const confirm = useConfirm();
@@ -164,109 +210,132 @@ export default function UsersGrid({ users, setUsers, projectId }: any) {
       <Toaster />
       {status === "authenticated" && users && (
         <div className='max-w-4xl bg-white rounded-b-lg w-full p-1'>
-          <form onSubmit={handleUserSubmit}>
-            <div className='hidden w-full p-3 sm:flex gap-2 py-1 border-b border-black'>
-              <TextField
-                type='email'
-                name='email' // Add name attribute to identify the input in handleInputChange
-                value={userFormData.email || undefined}
-                onChange={handleUserInputChange}
-                required
-                className='border border-black rounded-md w-full'
-                id='text'
-                label='Email'
-                variant='outlined'
-
-                // Add name attribute to identify the input in handleInputChange
-              />
-
-              <FormControl fullWidth className='group max-w-48'>
-                <InputLabel id='Role-label'>Role</InputLabel>
-                <Select
-                  value={userFormData.role}
-                  onChange={handleUserInputChange}
-                  id='role'
-                  name='role'
-                  labelId='role-label'
-                  label='Role'
-                  className=''
-                  required>
-                  <MenuItem className='' value='user'>
-                    <div className='flex justify-between items-center w-full'>
-                      <div>User</div>
-                    </div>
-                  </MenuItem>
-                  <MenuItem className='' value='admin'>
-                    <div className='flex justify-between items-center w-full'>
-                      <div>Admin</div>
-                    </div>
-                  </MenuItem>
-                  <MenuItem className='' value='shareholder'>
-                    <div className='flex justify-between items-center w-full'>
-                      <div>Shareholder</div>
-                    </div>
-                  </MenuItem>
-                </Select>
-              </FormControl>
-
-              <button
-                type='submit'
-                className=' self-center max-w-xs hover:scale-105 align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-4 px-6 rounded-lg bg-gray-900 text-white shadow-md shadow-gray-900/10 hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none'>
-                Add
-              </button>
-            </div>
-            <div className='sm:hidden w-full p-3 flex flex-col gap-2 py-1 border-b border-black'>
-              <TextField
-                type='email'
-                name='email' // Add name attribute to identify the input in handleInputChange
-                value={userFormData.email || undefined}
-                onChange={handleUserInputChange}
-                required
-                className='border border-black rounded-md w-full'
-                id='text'
-                label='Email'
-                variant='outlined'
-
-                // Add name attribute to identify the input in handleInputChange
-              />
-              <div className='flex justify-center gap-2'>
-                <FormControl fullWidth className='group max-w-48'>
-                  <InputLabel id='Role-label'>Role</InputLabel>
-                  <Select
-                    value={userFormData.role}
+          <Accordion>
+            <AccordionSummary
+              sx={{
+                root: {
+                  flexDirection: "column",
+                },
+                content: {
+                  marginBottom: 0,
+                },
+                expandIcon: {
+                  marginRight: 0,
+                  paddingTop: 0,
+                },
+              }}
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls='panel1-content'
+              id='panel1-header'>
+              Add User
+            </AccordionSummary>
+            <AccordionDetails>
+              <form onSubmit={handleUserSubmit}>
+                <div className='hidden w-full p-3 sm:flex gap-2 py-1 border-b border-black'>
+                  <TextField
+                    type='email'
+                    name='email' // Add name attribute to identify the input in handleInputChange
+                    value={userFormData.email || undefined}
                     onChange={handleUserInputChange}
-                    id='role'
-                    name='role'
-                    labelId='role-label'
-                    label='Role'
-                    className=''
-                    required>
-                    <MenuItem className='' value='user'>
-                      <div className='flex justify-between items-center w-full'>
-                        <div>User</div>
-                      </div>
-                    </MenuItem>
-                    <MenuItem className='' value='admin'>
-                      <div className='flex justify-between items-center w-full'>
-                        <div>Admin</div>
-                      </div>
-                    </MenuItem>
-                    <MenuItem className='' value='shareholder'>
-                      <div className='flex justify-between items-center w-full'>
-                        <div>Shareholder</div>
-                      </div>
-                    </MenuItem>
-                  </Select>
-                </FormControl>
+                    required
+                    className='border border-black rounded-md w-full'
+                    id='text'
+                    label='Email'
+                    variant='outlined'
 
-                <button
-                  type='submit'
-                  className=' self-center max-w-xs hover:scale-105 align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-4 px-6 rounded-lg bg-gray-900 text-white shadow-md shadow-gray-900/10 hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none'>
-                  Add
-                </button>
-              </div>
-            </div>
-          </form>
+                    // Add name attribute to identify the input in handleInputChange
+                  />
+
+                  <FormControl fullWidth className='group max-w-48'>
+                    <InputLabel id='Role-label'>Role</InputLabel>
+                    <Select
+                      value={userFormData.role}
+                      onChange={handleUserInputChange}
+                      id='role'
+                      name='role'
+                      labelId='role-label'
+                      label='Role'
+                      className=''
+                      required>
+                      <MenuItem className='' value='user'>
+                        <div className='flex justify-between items-center w-full'>
+                          <div>User</div>
+                        </div>
+                      </MenuItem>
+                      <MenuItem className='' value='admin'>
+                        <div className='flex justify-between items-center w-full'>
+                          <div>Admin</div>
+                        </div>
+                      </MenuItem>
+                      <MenuItem className='' value='shareholder'>
+                        <div className='flex justify-between items-center w-full'>
+                          <div>Shareholder</div>
+                        </div>
+                      </MenuItem>
+                    </Select>
+                  </FormControl>
+
+                  <button
+                    type='submit'
+                    className=' self-center max-w-xs hover:scale-105 align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-4 px-6 rounded-lg bg-gray-900 text-white shadow-md shadow-gray-900/10 hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none'>
+                    Add
+                  </button>
+                </div>
+                <div className='sm:hidden w-full p-3 flex flex-col gap-2 py-1 border-b border-black'>
+                  <TextField
+                    type='email'
+                    name='email' // Add name attribute to identify the input in handleInputChange
+                    value={userFormData.email || undefined}
+                    onChange={handleUserInputChange}
+                    required
+                    className='border border-black rounded-md w-full'
+                    id='text'
+                    label='Email'
+                    variant='outlined'
+
+                    // Add name attribute to identify the input in handleInputChange
+                  />
+                  <div className='flex justify-center gap-2'>
+                    <FormControl fullWidth className='group max-w-48'>
+                      <InputLabel id='Role-label'>Role</InputLabel>
+                      <Select
+                        value={userFormData.role}
+                        onChange={handleUserInputChange}
+                        id='role'
+                        name='role'
+                        labelId='role-label'
+                        label='Role'
+                        className=''
+                        required>
+                        <MenuItem className='' value='user'>
+                          <div className='flex justify-between items-center w-full'>
+                            <div>User</div>
+                          </div>
+                        </MenuItem>
+                        <MenuItem className='' value='admin'>
+                          <div className='flex justify-between items-center w-full'>
+                            <div>Admin</div>
+                          </div>
+                        </MenuItem>
+                        <MenuItem className='' value='shareholder'>
+                          <div className='flex justify-between items-center w-full'>
+                            <div>Shareholder</div>
+                          </div>
+                        </MenuItem>
+                      </Select>
+                    </FormControl>
+
+                    <button
+                      type='submit'
+                      className=' self-center max-w-xs hover:scale-105 align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-4 px-6 rounded-lg bg-gray-900 text-white shadow-md shadow-gray-900/10 hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none'>
+                      Add
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </AccordionDetails>
+          </Accordion>
+
           <div style={{ height: 500, width: "100%" }}>
             {users && (
               <DataGrid

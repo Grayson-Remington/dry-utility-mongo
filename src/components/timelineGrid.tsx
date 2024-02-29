@@ -10,6 +10,8 @@ import {
   Select,
   TextField,
 } from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+
 import Button from "@mui/material/Button";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
@@ -30,6 +32,51 @@ import {
   GridRowEditStopReasons,
   GridRowSelectionModel,
 } from "@mui/x-data-grid";
+import toast, { Toaster } from "react-hot-toast";
+import { styled } from "@mui/material/styles";
+import ArrowForwardIosSharpIcon from "@mui/icons-material/ArrowForwardIosSharp";
+import MuiAccordion, { AccordionProps } from "@mui/material/Accordion";
+import MuiAccordionSummary, {
+  AccordionSummaryProps,
+} from "@mui/material/AccordionSummary";
+import MuiAccordionDetails from "@mui/material/AccordionDetails";
+import Typography from "@mui/material/Typography";
+
+const Accordion = styled((props: AccordionProps) => (
+  <MuiAccordion disableGutters elevation={0} square {...props} />
+))(({ theme }) => ({
+  border: `1px solid ${theme.palette.divider}`,
+  "&:not(:last-child)": {
+    borderBottom: 0,
+  },
+  "&::before": {
+    display: "none",
+  },
+}));
+
+const AccordionSummary = styled((props: AccordionSummaryProps) => (
+  <MuiAccordionSummary
+    expandIcon={<ArrowForwardIosSharpIcon sx={{ fontSize: "0.9rem" }} />}
+    {...props}
+  />
+))(({ theme }) => ({
+  backgroundColor:
+    theme.palette.mode === "dark"
+      ? "rgba(255, 255, 255, .05)"
+      : "rgba(0, 0, 0, .03)",
+  "& .MuiAccordionSummary-expandIconWrapper.Mui-expanded": {},
+  "& .MuiAccordionSummary-content": {
+    flexGrow: 0,
+    justifyContent: "center",
+    marginLeft: theme.spacing(1),
+  },
+}));
+
+const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
+  padding: theme.spacing(2),
+  borderTop: "1px solid rgba(0, 0, 0, .125)",
+}));
+
 export default function TimelineGrid({
   timelineItems,
   setTimelineItems,
@@ -306,12 +353,16 @@ export default function TimelineGrid({
 
       if (response.ok) {
         const data = await response.json();
+        toast.success("Successfully added timeline item");
+
         setTimelineItemFormData({
           date: "",
           text: "",
           timelineItemClass: "Power",
         });
       } else {
+        toast.error("Failed to add timeline item");
+
         console.error("Failed to sign up");
       }
     } catch (error) {
@@ -332,10 +383,14 @@ export default function TimelineGrid({
 
           if (response.ok) {
             const data = await response.json();
+            toast.success("Successfully deleted timeline item");
+
             setTimelineItems(
               timelineItems!.filter((obj: any) => obj.id !== id)
             );
           } else {
+            toast.error("Failed to delete timeline item");
+
             console.error("Failed to sign up");
           }
         } catch (error) {
@@ -399,6 +454,8 @@ export default function TimelineGrid({
 
           if (response.ok) {
             const data = await response.json();
+            toast.success("Successfully added timeline item");
+
             setTimelineItems(filteredIds);
             console.log(data);
           } else {
@@ -418,142 +475,165 @@ export default function TimelineGrid({
     <>
       {status === "authenticated" && timelineItems && (
         <div className='max-w-4xl w-full bg-white rounded-b-lg p-1'>
-          <form onSubmit={handleTimelineItemSubmit}>
-            <div className='hidden sm:flex w-full p-3 gap-2 py-1'>
-              <input
-                type='date'
-                name='date' // Add name attribute to identify the input in handleInputChange
-                value={timelineItemFormData.date}
-                onChange={handleTimelineItemInputChange}
-                required
-                className='max-w-48 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 focus:cursor-text block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
-              />
-              <TextField
-                type='text'
-                name='text' // Add name attribute to identify the input in handleInputChange
-                className='border border-black rounded-md w-full'
-                required
-                id='text'
-                label='Timeline Item'
-                variant='outlined'
-                value={timelineItemFormData.text}
-                onChange={handleTimelineItemInputChange}
-                // Add name attribute to identify the input in handleInputChange
-              />
-
-              <FormControl fullWidth className='group max-w-48'>
-                <InputLabel id='timelineItemClass-label'>
-                  Timline Item Class
-                </InputLabel>
-                <Select
-                  value={timelineItemFormData.timelineItemClass}
-                  onChange={handleTimelineItemInputChange}
-                  id='timelineItemClass'
-                  name='timelineItemClass'
-                  labelId='timelineItemClass-label'
-                  label='Timeline Item Class'
-                  className=''>
-                  <MenuItem className='' value='Power'>
-                    <div className='flex justify-between items-center w-full'>
-                      <div>Power</div>
-                      <div className='rounded-full bg-red-500 h-4 w-4'></div>
-                    </div>
-                  </MenuItem>
-                  <MenuItem className='' value='Gas'>
-                    <div className='flex justify-between items-center w-full'>
-                      <div>Gas</div>
-                      <div className='rounded-full bg-yellow-500 h-4 w-4'></div>
-                    </div>
-                  </MenuItem>
-                  <MenuItem className='' value='Telco'>
-                    <div className='flex justify-between items-center w-full'>
-                      <div>Telco</div>
-                      <div className='rounded-full bg-orange-500 h-4 w-4'></div>
-                    </div>
-                  </MenuItem>
-                  <MenuItem className='' value='Misc'>
-                    <div className='flex justify-between items-center w-full'>
-                      <div>Misc</div>
-                      <div className='rounded-full bg-purple-500 h-4 w-4'></div>
-                    </div>
-                  </MenuItem>
-                </Select>
-              </FormControl>
-
-              <button
-                type='submit'
-                className=' self-center max-w-xs hover:scale-105 align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-4 px-6 rounded-lg bg-gray-900 text-white shadow-md shadow-gray-900/10 hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none'>
-                Add
-              </button>
-            </div>
-            <div className='sm:hidden w-full p-3 flex flex-col gap-2 py-1'>
-              <TextField
-                type='text'
-                name='text' // Add name attribute to identify the input in handleInputChange
-                className='border border-black rounded-md w-full'
-                required
-                id='text'
-                label='Timeline Item'
-                variant='outlined'
-                value={timelineItemFormData.text}
-                onChange={handleTimelineItemInputChange}
-                // Add name attribute to identify the input in handleInputChange
-              />
-              <div className='flex gap-2 justify-center'>
-                <input
-                  type='date'
-                  name='date' // Add name attribute to identify the input in handleInputChange
-                  value={timelineItemFormData.date}
-                  onChange={handleTimelineItemInputChange}
-                  required
-                  className='max-w-48 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 focus:cursor-text block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
-                />
-                <FormControl fullWidth className='group max-w-48 min-w-32'>
-                  <InputLabel id='timelineItemClass-label'>
-                    Timline Item Class
-                  </InputLabel>
-                  <Select
-                    value={timelineItemFormData.timelineItemClass}
+          <Accordion>
+            <AccordionSummary
+              sx={{
+                root: {
+                  flexDirection: "column",
+                },
+                content: {
+                  marginBottom: 0,
+                },
+                expandIcon: {
+                  marginRight: 0,
+                  paddingTop: 0,
+                },
+              }}
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls='panel1-content'
+              id='panel1-header'>
+              Add Timeline Item
+            </AccordionSummary>
+            <AccordionDetails>
+              <form onSubmit={handleTimelineItemSubmit}>
+                <div className='hidden sm:flex w-full p-3 gap-2 py-1'>
+                  <input
+                    type='date'
+                    name='date' // Add name attribute to identify the input in handleInputChange
+                    value={timelineItemFormData.date}
                     onChange={handleTimelineItemInputChange}
-                    id='timelineItemClass'
-                    name='timelineItemClass'
-                    labelId='timelineItemClass-label'
-                    label='Timeline Item Class'
-                    className=''>
-                    <MenuItem className='' value='Power'>
-                      <div className='flex justify-between items-center w-full'>
-                        <div>Power</div>
-                        <div className='rounded-full bg-red-500 h-4 w-4'></div>
-                      </div>
-                    </MenuItem>
-                    <MenuItem className='' value='Gas'>
-                      <div className='flex justify-between items-center w-full'>
-                        <div>Gas</div>
-                        <div className='rounded-full bg-yellow-500 h-4 w-4'></div>
-                      </div>
-                    </MenuItem>
-                    <MenuItem className='' value='Telco'>
-                      <div className='flex justify-between items-center w-full'>
-                        <div>Telco</div>
-                        <div className='rounded-full bg-orange-500 h-4 w-4'></div>
-                      </div>
-                    </MenuItem>
-                    <MenuItem className='' value='Misc'>
-                      <div className='flex justify-between items-center w-full'>
-                        <div>Misc</div>
-                        <div className='rounded-full bg-purple-500 h-4 w-4'></div>
-                      </div>
-                    </MenuItem>
-                  </Select>
-                </FormControl>
-              </div>
-              <button
-                type='submit'
-                className=' self-center w-full max-w-xs hover:scale-105 align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-4 px-6 rounded-lg bg-gray-900 text-white shadow-md shadow-gray-900/10 hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none'>
-                Add
-              </button>
-            </div>
-          </form>
+                    required
+                    className='max-w-48 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 focus:cursor-text block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
+                  />
+                  <TextField
+                    type='text'
+                    name='text' // Add name attribute to identify the input in handleInputChange
+                    className='border border-black rounded-md w-full'
+                    required
+                    id='text'
+                    label='Timeline Item'
+                    variant='outlined'
+                    value={timelineItemFormData.text}
+                    onChange={handleTimelineItemInputChange}
+                    // Add name attribute to identify the input in handleInputChange
+                  />
+
+                  <FormControl fullWidth className='group max-w-48'>
+                    <InputLabel id='timelineItemClass-label'>
+                      Timline Item Class
+                    </InputLabel>
+                    <Select
+                      value={timelineItemFormData.timelineItemClass}
+                      onChange={handleTimelineItemInputChange}
+                      id='timelineItemClass'
+                      name='timelineItemClass'
+                      labelId='timelineItemClass-label'
+                      label='Timeline Item Class'
+                      className=''>
+                      <MenuItem className='' value='Power'>
+                        <div className='flex justify-between items-center w-full'>
+                          <div>Power</div>
+                          <div className='rounded-full bg-red-500 h-4 w-4'></div>
+                        </div>
+                      </MenuItem>
+                      <MenuItem className='' value='Gas'>
+                        <div className='flex justify-between items-center w-full'>
+                          <div>Gas</div>
+                          <div className='rounded-full bg-yellow-500 h-4 w-4'></div>
+                        </div>
+                      </MenuItem>
+                      <MenuItem className='' value='Telco'>
+                        <div className='flex justify-between items-center w-full'>
+                          <div>Telco</div>
+                          <div className='rounded-full bg-orange-500 h-4 w-4'></div>
+                        </div>
+                      </MenuItem>
+                      <MenuItem className='' value='Misc'>
+                        <div className='flex justify-between items-center w-full'>
+                          <div>Misc</div>
+                          <div className='rounded-full bg-purple-500 h-4 w-4'></div>
+                        </div>
+                      </MenuItem>
+                    </Select>
+                  </FormControl>
+
+                  <button
+                    type='submit'
+                    className=' self-center max-w-xs hover:scale-105 align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-4 px-6 rounded-lg bg-gray-900 text-white shadow-md shadow-gray-900/10 hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none'>
+                    Add
+                  </button>
+                </div>
+                <div className='sm:hidden w-full p-3 flex flex-col gap-2 py-1'>
+                  <TextField
+                    type='text'
+                    name='text' // Add name attribute to identify the input in handleInputChange
+                    className='border border-black rounded-md w-full'
+                    required
+                    id='text'
+                    label='Timeline Item'
+                    variant='outlined'
+                    value={timelineItemFormData.text}
+                    onChange={handleTimelineItemInputChange}
+                    // Add name attribute to identify the input in handleInputChange
+                  />
+                  <div className='flex gap-2 justify-center'>
+                    <input
+                      type='date'
+                      name='date' // Add name attribute to identify the input in handleInputChange
+                      value={timelineItemFormData.date}
+                      onChange={handleTimelineItemInputChange}
+                      required
+                      className='max-w-48 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 focus:cursor-text block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
+                    />
+                    <FormControl fullWidth className='group max-w-48 min-w-32'>
+                      <InputLabel id='timelineItemClass-label'>
+                        Timline Item Class
+                      </InputLabel>
+                      <Select
+                        value={timelineItemFormData.timelineItemClass}
+                        onChange={handleTimelineItemInputChange}
+                        id='timelineItemClass'
+                        name='timelineItemClass'
+                        labelId='timelineItemClass-label'
+                        label='Timeline Item Class'
+                        className=''>
+                        <MenuItem className='' value='Power'>
+                          <div className='flex justify-between items-center w-full'>
+                            <div>Power</div>
+                            <div className='rounded-full bg-red-500 h-4 w-4'></div>
+                          </div>
+                        </MenuItem>
+                        <MenuItem className='' value='Gas'>
+                          <div className='flex justify-between items-center w-full'>
+                            <div>Gas</div>
+                            <div className='rounded-full bg-yellow-500 h-4 w-4'></div>
+                          </div>
+                        </MenuItem>
+                        <MenuItem className='' value='Telco'>
+                          <div className='flex justify-between items-center w-full'>
+                            <div>Telco</div>
+                            <div className='rounded-full bg-orange-500 h-4 w-4'></div>
+                          </div>
+                        </MenuItem>
+                        <MenuItem className='' value='Misc'>
+                          <div className='flex justify-between items-center w-full'>
+                            <div>Misc</div>
+                            <div className='rounded-full bg-purple-500 h-4 w-4'></div>
+                          </div>
+                        </MenuItem>
+                      </Select>
+                    </FormControl>
+                  </div>
+                  <button
+                    type='submit'
+                    className=' self-center w-full max-w-xs hover:scale-105 align-middle select-none font-sans font-bold text-center uppercase transition-all disabled:opacity-50 disabled:shadow-none disabled:pointer-events-none text-xs py-4 px-6 rounded-lg bg-gray-900 text-white shadow-md shadow-gray-900/10 hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none'>
+                    Add
+                  </button>
+                </div>
+              </form>
+            </AccordionDetails>
+          </Accordion>
+
           {selectedRows.length >= 1 && (
             <Button onClick={handleDeleteRows}>Delete Selected Rows</Button>
           )}
