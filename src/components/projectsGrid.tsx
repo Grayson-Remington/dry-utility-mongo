@@ -243,7 +243,7 @@ export default function ProjectsGrid({
   return (
     <>
       {status === "authenticated" && projects && (
-        <div className='max-w-4xl bg-white rounded-lg w-full p-1'>
+        <div className='max-w-4xl bg-white rounded-lg w-full p-3'>
           <Accordion>
             <AccordionSummary
               sx={{

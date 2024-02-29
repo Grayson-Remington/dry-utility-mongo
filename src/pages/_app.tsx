@@ -12,7 +12,7 @@ export default function App({
 }: AppProps) {
   return (
     <>
-      <Toaster />
+      <Toaster position='bottom-center' />
       <style jsx global>{`
         html {
           font-family: ${roboto.style.fontFamily};
