@@ -29,6 +29,7 @@ import {
   GridRowModel,
   GridRowEditStopReasons,
   GridValueSetterParams,
+  GridRowSelectionModel,
 } from "@mui/x-data-grid";
 import toast, { Toaster } from "react-hot-toast";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -456,6 +457,48 @@ export default function AllTasksGrid({ tasks, setTasks, projects }: any) {
     addTask(newItem);
     // Update the state by creating a new array with the new item
   };
+  const [selectedRows, setSelectedRows] = useState<GridRowId[]>([]);
+  const [rowSelectionModel, setRowSelectionModel] =
+    useState<GridRowSelectionModel>([]);
+  const handleSelectionChange = (newSelection: any) => {
+    setSelectedRows(newSelection.selectionModel);
+  };
+
+  const handleDeleteRows = async () => {
+    const filteredIds = tasks.filter(
+      (task: any) => !selectedRows.includes(task.id)
+    );
+    confirm({ description: "This action is permanent!" })
+      .then(async () => {
+        try {
+          const response = await fetch("/api/deleteManyTasks", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ ids: selectedRows }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            toast.success("Successfully deleted tasks");
+
+            setTasks(filteredIds);
+            console.log(data);
+          } else {
+            console.error("Failed to sign up");
+            toast.error("Failed to delete tasks");
+          }
+        } catch (error) {
+          console.error("An error occurred:", error);
+        }
+      })
+      .catch(() => {
+        /* ... */
+      });
+    // Implement your delete logic here using selectedRows
+    console.log("Selected rows to delete:", selectedRows);
+  };
   return (
     <>
       {status === "authenticated" && tasks && (
@@ -675,12 +718,22 @@ export default function AllTasksGrid({ tasks, setTasks, projects }: any) {
               </form>
             </AccordionDetails>
           </Accordion>
-
+          {selectedRows.length >= 1 && (
+            <Button onClick={handleDeleteRows}>Delete Selected Rows</Button>
+          )}
           <div style={{ height: 450, width: "100%" }}>
             <DataGrid
               getRowId={getRowId}
               rows={tasks}
               columns={columns}
+              checkboxSelection
+              onRowSelectionModelChange={(
+                newRowSelectionModel: GridRowSelectionModel
+              ) => {
+                setRowSelectionModel(newRowSelectionModel);
+                setSelectedRows(newRowSelectionModel as GridRowId[]);
+              }}
+              rowSelectionModel={rowSelectionModel}
               editMode='row'
               rowModesModel={rowModesModel}
               onRowModesModelChange={handleRowModesModelChange}
