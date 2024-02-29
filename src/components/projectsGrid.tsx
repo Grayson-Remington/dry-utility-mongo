@@ -1,4 +1,14 @@
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import {
+  DataGrid,
+  GridRowModes,
+  GridRowEditStopReasons,
+  GridColDef,
+  GridEventListener,
+  GridRowId,
+  GridRowModel,
+  GridRowModesModel,
+  GridActionsCellItem,
+} from "@mui/x-data-grid";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { FaRegTrashAlt } from "react-icons/fa";
@@ -7,7 +17,11 @@ import Link from "next/link";
 import { TextField } from "@mui/material";
 import toast, { Toaster } from "react-hot-toast";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/DeleteOutlined";
+import SaveIcon from "@mui/icons-material/Save";
+import CancelIcon from "@mui/icons-material/Close";
 import { styled } from "@mui/material/styles";
 import ArrowForwardIosSharpIcon from "@mui/icons-material/ArrowForwardIosSharp";
 import MuiAccordion, { AccordionProps } from "@mui/material/Accordion";
@@ -72,11 +86,81 @@ export default function ProjectsGrid({
 
     return formattedDate;
   }
+  const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
+
+  const handleRowEditStop: GridEventListener<"rowEditStop"> = (
+    params,
+    event
+  ) => {
+    if (params.reason === GridRowEditStopReasons.rowFocusOut) {
+      event.defaultMuiPrevented = true;
+    }
+  };
+
+  const handleEditClick = (id: GridRowId) => () => {
+    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
+  };
+
+  const handleSaveClick = (id: GridRowId) => () => {
+    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
+  };
+
+  const handleDeleteClick = (id: GridRowId) => () => {
+    setProjects(projects.filter((row: any) => row.id !== id));
+  };
+
+  const handleCancelClick = (id: GridRowId) => () => {
+    setRowModesModel({
+      ...rowModesModel,
+      [id]: { mode: GridRowModes.View, ignoreModifications: true },
+    });
+
+    const editedRow = projects.find((row: any) => row.id === id);
+    if (editedRow!.isNew) {
+      setProjects(projects.filter((row: any) => row.id !== id));
+    }
+  };
+
+  const processRowUpdate = async (newRow: GridRowModel) => {
+    const updatedRow = { ...newRow };
+    setProjects(
+      projects.map((row: any) => (row.id === newRow.id ? updatedRow : row))
+    );
+    console.log(updatedRow);
+    try {
+      const response = await fetch("/api/updateProject", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          projectName: updatedRow.projectName,
+          projectNumber: updatedRow.projectNumber,
+          id: updatedRow.id,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data, "update reply");
+      } else {
+        console.error("Failed to sign up");
+      }
+    } catch (error) {
+      console.error("An error occurred:", error);
+    }
+    return updatedRow;
+  };
+
+  const handleRowModesModelChange = (newRowModesModel: GridRowModesModel) => {
+    setRowModesModel(newRowModesModel);
+  };
   const columns: GridColDef[] = [
     {
       field: "projectName",
       headerName: "Project Name",
       width: 500,
+      editable: true,
       renderCell: (params) => (
         <Link
           onClick={() => setLoading(true)}
@@ -103,6 +187,8 @@ export default function ProjectsGrid({
     {
       field: "projectNumber",
       headerName: "Project Number",
+      editable: true,
+
       width: 500,
       renderCell: (params) => <>{params.row.projectNumber}</>,
       flex: 1,
@@ -111,30 +197,57 @@ export default function ProjectsGrid({
       align: "center",
     },
     {
-      field: "delete",
-      headerName: "Delete",
+      field: "actions",
+      type: "actions",
+      headerName: "Actions",
       width: 100,
-      renderCell: (params) => (
-        <>
-          {params.row.users.find(
-            (user: any) => user.email === session?.user?.email
-          ).role === "admin" ? (
-            <button
-              className='p-2'
-              onClick={() =>
-                deleteProject(params.row.id, params.row.projectNumber)
-              }>
-              <FaRegTrashAlt />
-            </button>
-          ) : (
-            <div></div>
-          )}
-        </>
-      ),
-      disableColumnMenu: true,
-      sortable: false,
-      align: "center",
-      headerAlign: "center",
+      cellClassName: "actions",
+      getActions: (params) => {
+        const isInEditMode =
+          rowModesModel[params.row.id]?.mode === GridRowModes.Edit;
+
+        if (isInEditMode) {
+          return [
+            <GridActionsCellItem
+              key={1}
+              icon={<SaveIcon />}
+              label='Save'
+              sx={{
+                color: "primary.main",
+              }}
+              onClick={handleSaveClick(params.row.id)}
+            />,
+            <GridActionsCellItem
+              key={1}
+              icon={<CancelIcon />}
+              label='Cancel'
+              className='textPrimary'
+              onClick={handleCancelClick(params.row.id)}
+              color='inherit'
+            />,
+          ];
+        }
+
+        return [
+          <GridActionsCellItem
+            key='1'
+            icon={<EditIcon />}
+            label='Edit'
+            className='textPrimary'
+            onClick={handleEditClick(params.row.id)}
+            color='inherit'
+          />,
+          <GridActionsCellItem
+            key='2'
+            icon={<DeleteIcon />}
+            label='Delete'
+            onClick={() =>
+              deleteProject(params.row.id, params.row.projectNumber)
+            }
+            color='inherit'
+          />,
+        ];
+      },
     },
 
     // {
@@ -303,6 +416,14 @@ export default function ProjectsGrid({
                 getRowId={getRowId}
                 rows={projects}
                 columns={columns}
+                editMode='row'
+                rowModesModel={rowModesModel}
+                onRowModesModelChange={handleRowModesModelChange}
+                onRowEditStop={handleRowEditStop}
+                processRowUpdate={processRowUpdate}
+                slotProps={{
+                  toolbar: { setProjects, setRowModesModel },
+                }}
                 initialState={{
                   pagination: {
                     paginationModel: { page: 0, pageSize: 10 },
