@@ -272,7 +272,7 @@ export default function ProjectPage({
             onClick={() => setSelectedGrid("Files")}>
             Files
           </button>
-          {role == ("admin" || "owner") && (
+          {(role == "admin" || role == "owner") && (
             <button
               className={`p-2 border border-blue-600  ${
                 selectedGrid === "Users"
@@ -328,9 +328,11 @@ export default function ProjectPage({
           setFiles={setFiles}
         />
       )}
-      {role && role == "admin" && selectedGrid === "Users" && (
-        <UsersGrid projectId={projectId} users={users} setUsers={setUsers} />
-      )}
+      {role &&
+        (role == "admin" || role == "owner") &&
+        selectedGrid === "Users" && (
+          <UsersGrid projectId={projectId} users={users} setUsers={setUsers} />
+        )}
       {selectedGrid === "Map" && (
         <MapComponent
           projectId={projectId}
