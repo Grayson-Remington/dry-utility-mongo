@@ -16,7 +16,7 @@ export default async function handler(req: any, res: any) {
           users: [
             {
               email: email,
-              role: "admin",
+              role: "owner",
               id: Math.floor(Math.random() * 1000000000).toString(),
             },
           ],

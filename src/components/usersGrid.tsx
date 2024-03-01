@@ -73,7 +73,7 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
 }));
 
 export default function UsersGrid({ users, setUsers, projectId }: any) {
-  const [role, setRole] = useState();
+  const [role, setRole] = useState("owner");
   const { data: session, status } = useSession();
   const confirm = useConfirm();
   function formatDate(inputDate: any) {
@@ -192,7 +192,7 @@ export default function UsersGrid({ users, setUsers, projectId }: any) {
       getActions: (params) => {
         const isInEditMode =
           rowModesModel[params.row.id]?.mode === GridRowModes.Edit;
-        if (role !== "admin") return [];
+        if (params.row.role == "owner") return [];
         if (isInEditMode) {
           return [
             <GridActionsCellItem
@@ -224,6 +224,7 @@ export default function UsersGrid({ users, setUsers, projectId }: any) {
             onClick={handleEditClick(params.row.id)}
             color='inherit'
           />,
+
           <GridActionsCellItem
             key='2'
             icon={<DeleteIcon />}
@@ -480,6 +481,7 @@ export default function UsersGrid({ users, setUsers, projectId }: any) {
                 rows={users}
                 columns={columns}
                 editMode='row'
+                isCellEditable={(params) => params.row.role !== "owner"}
                 rowModesModel={rowModesModel}
                 onRowModesModelChange={handleRowModesModelChange}
                 onRowEditStop={handleRowEditStop}
