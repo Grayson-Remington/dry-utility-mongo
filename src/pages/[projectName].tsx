@@ -272,7 +272,7 @@ export default function ProjectPage({
             onClick={() => setSelectedGrid("Files")}>
             Files
           </button>
-          {role == "admin" && (
+          {role == ("admin" || "owner") && (
             <button
               className={`p-2 border border-blue-600  ${
                 selectedGrid === "Users"
