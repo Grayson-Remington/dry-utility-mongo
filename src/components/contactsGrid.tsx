@@ -385,7 +385,7 @@ export default function ContactsGrid({
             </AccordionSummary>
             <AccordionDetails>
               <form onSubmit={handleContactSubmit}>
-                <div className='hidden w-full sm:flex items-center gap-2 py-1 p-3 border-b border-black'>
+                <div className='hidden w-full sm:flex items-center gap-2 py-1 p-3'>
                   <TextField
                     type='text'
                     name='name' // Add name attribute to identify the input in handleInputChange

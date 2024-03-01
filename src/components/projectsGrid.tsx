@@ -205,7 +205,10 @@ export default function ProjectsGrid({
       getActions: (params) => {
         const isInEditMode =
           rowModesModel[params.row.id]?.mode === GridRowModes.Edit;
-
+        const role = params.row.users.find(
+          (user: any) => user.email === session?.user?.email
+        ).role;
+        if (role === "owner") return [];
         if (isInEditMode) {
           return [
             <GridActionsCellItem
@@ -417,6 +420,12 @@ export default function ProjectsGrid({
                 rows={projects}
                 columns={columns}
                 editMode='row'
+                isCellEditable={(params) => {
+                  const role = params.row.users.find(
+                    (user: any) => user.email === session?.user?.email
+                  ).role;
+                  return role !== "owner";
+                }}
                 rowModesModel={rowModesModel}
                 onRowModesModelChange={handleRowModesModelChange}
                 onRowEditStop={handleRowEditStop}

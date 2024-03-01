@@ -369,7 +369,7 @@ export default function UsersGrid({ users, setUsers, projectId }: any) {
             </AccordionSummary>
             <AccordionDetails>
               <form onSubmit={handleUserSubmit}>
-                <div className='hidden w-full p-3 sm:flex gap-2 py-1 border-b border-black'>
+                <div className='hidden w-full p-3 sm:flex gap-2 py-1'>
                   <TextField
                     type='email'
                     name='email' // Add name attribute to identify the input in handleInputChange
