@@ -21,7 +21,7 @@ export const nextauthOptions: AuthOptions = {
       async authorize(credentials, req) {
         const client = await clientPromise;
         const usersCollection = client.db("dryUdb").collection("users");
-        const email = credentials?.email.toLowerCase();
+        const email = credentials?.email;
         const user = await usersCollection.findOne({ email });
         if (!user) {
           throw new Error("User not found");

@@ -1,5 +1,15 @@
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { useState } from "react";
+import {
+  DataGrid,
+  GridColDef,
+  GridEventListener,
+  GridRowId,
+  GridRowModesModel,
+  GridRowEditStopReasons,
+  GridRowModes,
+  GridRowModel,
+  GridActionsCellItem,
+} from "@mui/x-data-grid";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { useConfirm } from "material-ui-confirm";
@@ -13,7 +23,11 @@ import {
 } from "@mui/material";
 import { Toaster } from "react-hot-toast";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/DeleteOutlined";
+import SaveIcon from "@mui/icons-material/Save";
+import CancelIcon from "@mui/icons-material/Close";
 import { styled } from "@mui/material/styles";
 import ArrowForwardIosSharpIcon from "@mui/icons-material/ArrowForwardIosSharp";
 import MuiAccordion, { AccordionProps } from "@mui/material/Accordion";
@@ -59,6 +73,7 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
 }));
 
 export default function UsersGrid({ users, setUsers, projectId }: any) {
+  const [role, setRole] = useState();
   const { data: session, status } = useSession();
   const confirm = useConfirm();
   function formatDate(inputDate: any) {
@@ -75,6 +90,77 @@ export default function UsersGrid({ users, setUsers, projectId }: any) {
 
     return formattedDate;
   }
+
+  const [rowModesModel, setRowModesModel] = useState<GridRowModesModel>({});
+
+  const handleRowEditStop: GridEventListener<"rowEditStop"> = (
+    params,
+    event
+  ) => {
+    if (params.reason === GridRowEditStopReasons.rowFocusOut) {
+      event.defaultMuiPrevented = true;
+    }
+  };
+
+  const handleEditClick = (id: GridRowId) => () => {
+    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
+  };
+
+  const handleSaveClick = (id: GridRowId) => () => {
+    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
+  };
+
+  const handleDeleteClick = (id: GridRowId) => () => {
+    setUsers(users.filter((row: any) => row.id !== id));
+  };
+
+  const handleCancelClick = (id: GridRowId) => () => {
+    setRowModesModel({
+      ...rowModesModel,
+      [id]: { mode: GridRowModes.View, ignoreModifications: true },
+    });
+
+    const editedRow = users.find((row: any) => row.id === id);
+    if (editedRow!.isNew) {
+      setUsers(users.filter((row: any) => row.id !== id));
+    }
+  };
+
+  const processRowUpdate = async (newRow: GridRowModel) => {
+    const updatedRow = { ...newRow };
+    setUsers(
+      users.map((row: any) => (row.id === newRow.id ? updatedRow : row))
+    );
+    console.log(updatedRow);
+    try {
+      const response = await fetch("/api/updateUser", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: updatedRow.email,
+          role: updatedRow.role,
+          projectId: projectId,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data, "update reply");
+      } else {
+        console.error("Failed to sign up");
+      }
+    } catch (error) {
+      console.error("An error occurred:", error);
+    }
+    return updatedRow;
+  };
+
+  const handleRowModesModelChange = (newRowModesModel: GridRowModesModel) => {
+    setRowModesModel(newRowModesModel);
+  };
+
   const columns: GridColDef[] = [
     {
       field: "users",
@@ -89,23 +175,64 @@ export default function UsersGrid({ users, setUsers, projectId }: any) {
       field: "role",
       headerName: "Role",
       width: 200,
+      editable: true,
+      type: "singleSelect",
+      valueOptions: ["admin", "user", "shareholder"],
       renderCell: (params) => <div>{params.row.role}</div>,
       align: "center",
       headerAlign: "center",
     },
+
     {
-      field: "delete",
-      headerName: "Delete",
+      field: "actions",
+      type: "actions",
+      headerName: "Actions",
       width: 100,
-      renderCell: (params) => (
-        <button className='p-2' onClick={() => deleteUser(params.row.email)}>
-          <FaRegTrashAlt />
-        </button>
-      ),
-      disableColumnMenu: true,
-      sortable: false,
-      align: "center",
-      headerAlign: "center",
+      cellClassName: "actions",
+      getActions: (params) => {
+        const isInEditMode =
+          rowModesModel[params.row.id]?.mode === GridRowModes.Edit;
+        if (role !== "admin") return [];
+        if (isInEditMode) {
+          return [
+            <GridActionsCellItem
+              key={1}
+              icon={<SaveIcon />}
+              label='Save'
+              sx={{
+                color: "primary.main",
+              }}
+              onClick={handleSaveClick(params.row.id)}
+            />,
+            <GridActionsCellItem
+              key={1}
+              icon={<CancelIcon />}
+              label='Cancel'
+              className='textPrimary'
+              onClick={handleCancelClick(params.row.id)}
+              color='inherit'
+            />,
+          ];
+        }
+
+        return [
+          <GridActionsCellItem
+            key='1'
+            icon={<EditIcon />}
+            label='Edit'
+            className='textPrimary'
+            onClick={handleEditClick(params.row.id)}
+            color='inherit'
+          />,
+          <GridActionsCellItem
+            key='2'
+            icon={<DeleteIcon />}
+            label='Delete'
+            onClick={() => deleteUser(params.row.email)}
+            color='inherit'
+          />,
+        ];
+      },
     },
 
     // {
@@ -125,8 +252,14 @@ export default function UsersGrid({ users, setUsers, projectId }: any) {
     // },
   ];
   function getRowId(row: any) {
-    return row.id | Math.floor(Math.random() * 1000000000);
+    return row.id;
   }
+  useEffect(() => {
+    setRole(
+      users.find((user: any) => user.email === session?.user?.email).role
+    );
+  }, [session, users]);
+
   const [userFormData, setUserFormData] = useState({
     email: "",
     role: "",
@@ -139,6 +272,7 @@ export default function UsersGrid({ users, setUsers, projectId }: any) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          id: newItem.id,
           projectId: projectId,
           email: newItem.email,
           role: newItem.role,
@@ -147,6 +281,8 @@ export default function UsersGrid({ users, setUsers, projectId }: any) {
 
       if (response.ok) {
         const data = await response.json();
+        setUsers((prevData: any) => [...prevData, newItem]);
+
         setUserFormData({
           email: "",
           role: "",
@@ -169,6 +305,7 @@ export default function UsersGrid({ users, setUsers, projectId }: any) {
     e.preventDefault();
     // You can now access the formData object and perform any actions (e.g., send data to the server)
     const newItem = {
+      id: Math.floor(Math.random() * 1000000000),
       email: userFormData.email,
       role: userFormData.role,
     };
@@ -342,6 +479,14 @@ export default function UsersGrid({ users, setUsers, projectId }: any) {
                 getRowId={getRowId}
                 rows={users}
                 columns={columns}
+                editMode='row'
+                rowModesModel={rowModesModel}
+                onRowModesModelChange={handleRowModesModelChange}
+                onRowEditStop={handleRowEditStop}
+                processRowUpdate={processRowUpdate}
+                slotProps={{
+                  toolbar: { setUsers, setRowModesModel },
+                }}
                 initialState={{
                   pagination: {
                     paginationModel: { page: 0, pageSize: 10 },

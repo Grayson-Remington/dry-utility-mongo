@@ -19,7 +19,7 @@ export default function Home() {
         },
         body: JSON.stringify({
           name: firstName + " " + lastName,
-          email: email.toLowerCase(),
+          email: email,
           password: password,
         }),
       });
@@ -29,11 +29,8 @@ export default function Home() {
 
         router.push("/api/auth/signin");
       } else {
-        console.error("Failed to sign up");
       }
-    } catch (error) {
-      console.error("An error occurred:", error);
-    }
+    } catch (error) {}
   };
   const isPasswordValid = (password: any) => {
     // Check if the password has at least 8 characters

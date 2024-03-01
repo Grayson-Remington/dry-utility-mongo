@@ -347,7 +347,7 @@ export default function ProjectsGrid({
     const newItem = {
       projectName: projectFormData.projectName,
       projectNumber: projectFormData.projectNumber,
-      id: Math.floor(Math.random() * 1000000000),
+      id: Math.floor(Math.random() * 1000000000).toString(),
       users: [{ email: session?.user?.email, role: "admin" }],
     };
     addProject(newItem);
