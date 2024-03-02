@@ -208,7 +208,7 @@ export default function ProjectsGrid({
         const role = params.row.users.find(
           (user: any) => user.email === session?.user?.email
         ).role;
-        if (role === "owner") return [];
+        if (role !== "owner") return [];
         if (isInEditMode) {
           return [
             <GridActionsCellItem
@@ -424,7 +424,7 @@ export default function ProjectsGrid({
                   const role = params.row.users.find(
                     (user: any) => user.email === session?.user?.email
                   ).role;
-                  return role !== "owner";
+                  return role == "owner";
                 }}
                 rowModesModel={rowModesModel}
                 onRowModesModelChange={handleRowModesModelChange}

@@ -167,7 +167,6 @@ export default function TimelineGrid({
     setTimelineItems(
       timelineItems.map((row: any) => (row.id === newRow.id ? updatedRow : row))
     );
-    console.log(updatedRow);
 
     try {
       const response = await fetch("/api/updateTimelineItem", {
@@ -187,13 +186,9 @@ export default function TimelineGrid({
 
       if (response.ok) {
         const data = await response.json();
-        console.log(data, "update reply");
       } else {
-        console.error("Failed to sign up");
       }
-    } catch (error) {
-      console.error("An error occurred:", error);
-    }
+    } catch (error) {}
     return updatedRow;
   };
 
@@ -362,12 +357,8 @@ export default function TimelineGrid({
         });
       } else {
         toast.error("Failed to add timeline item");
-
-        console.error("Failed to sign up");
       }
-    } catch (error) {
-      console.error("An error occurred:", error);
-    }
+    } catch (error) {}
   };
   const deleteTimelineItem = async (id: any) => {
     confirm({ description: "This action is permanent!" })
@@ -390,12 +381,8 @@ export default function TimelineGrid({
             );
           } else {
             toast.error("Failed to delete timeline item");
-
-            console.error("Failed to sign up");
           }
-        } catch (error) {
-          console.error("An error occurred:", error);
-        }
+        } catch (error) {}
       })
       .catch(() => {
         /* ... */
@@ -413,7 +400,6 @@ export default function TimelineGrid({
       ...prevData,
       [name]: value,
     }));
-    console.log(value);
   };
   const handleTimelineItemSubmit = (e: any) => {
     e.preventDefault();
@@ -457,19 +443,14 @@ export default function TimelineGrid({
             toast.success("Successfully added timeline item");
 
             setTimelineItems(filteredIds);
-            console.log(data);
           } else {
-            console.error("Failed to sign up");
           }
-        } catch (error) {
-          console.error("An error occurred:", error);
-        }
+        } catch (error) {}
       })
       .catch(() => {
         /* ... */
       });
     // Implement your delete logic here using selectedRows
-    console.log("Selected rows to delete:", selectedRows);
   };
   return (
     <>

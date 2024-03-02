@@ -166,6 +166,7 @@ export default function UsersGrid({ users, setUsers, projectId }: any) {
       field: "users",
       headerName: "Users",
       width: 500,
+      minWidth: 200,
       renderCell: (params) => <div>{params.row.email}</div>,
       flex: 1,
       align: "center",
