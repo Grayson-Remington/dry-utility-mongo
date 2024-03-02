@@ -131,7 +131,6 @@ export default function UsersGrid({ users, setUsers, projectId }: any) {
     setUsers(
       users.map((row: any) => (row.id === newRow.id ? updatedRow : row))
     );
-    console.log(updatedRow);
     try {
       const response = await fetch("/api/updateUser", {
         method: "POST",
@@ -147,13 +146,9 @@ export default function UsersGrid({ users, setUsers, projectId }: any) {
 
       if (response.ok) {
         const data = await response.json();
-        console.log(data, "update reply");
       } else {
-        console.error("Failed to sign up");
       }
-    } catch (error) {
-      console.error("An error occurred:", error);
-    }
+    } catch (error) {}
     return updatedRow;
   };
 
@@ -290,11 +285,8 @@ export default function UsersGrid({ users, setUsers, projectId }: any) {
           role: "",
         });
       } else {
-        console.error("Failed to sign up");
       }
-    } catch (error) {
-      console.error("An error occurred:", error);
-    }
+    } catch (error) {}
   };
   const handleUserInputChange = (e: any) => {
     const { name, value } = e.target;
@@ -333,11 +325,8 @@ export default function UsersGrid({ users, setUsers, projectId }: any) {
             const data = await response.json();
             setUsers(users!.filter((obj: any) => obj.email !== email));
           } else {
-            console.error("Failed to sign up");
           }
-        } catch (error) {
-          console.error("An error occurred:", error);
-        }
+        } catch (error) {}
       })
       .catch(() => {
         /* ... */
