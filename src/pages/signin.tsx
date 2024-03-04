@@ -46,6 +46,16 @@ function Signin({ providers }: any) {
                 <h2 className='text-center font-semibold text-3xl lg:text-4xl text-gray-800'>
                   Sign In
                 </h2>
+                <div className='text-center pt-2 text-xs'>
+                  <div>
+                    <span className='font-bold'>Guest Email:</span>{" "}
+                    test@email.com
+                  </div>
+                  <div>
+                    <span className='font-bold'>Guest Password:</span>{" "}
+                    Password123!
+                  </div>
+                </div>
 
                 <form className='mt-10' onSubmit={handleSubmit}>
                   <label className='block text-xs font-semibold text-gray-600 uppercase'>
