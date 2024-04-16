@@ -8,10 +8,7 @@ const MapComponent = ({ projectId, projectName, files, setFiles }: any) => {
 	function replaceSpacesWithPluses(inputString: any) {
 		return inputString.replace(/ /g, '+');
 	}
-	function replaceSpacesWithPlus(inputString: any) {
-		var replacedString = inputString.replace(/ /g, '+');
-		return replacedString;
-	}
+
 	let updatedProjectName = replaceSpacesWithPluses(projectName);
 	function findFirstKmzFile(files: any) {
 		for (const file of files) {
@@ -58,7 +55,7 @@ const MapComponent = ({ projectId, projectName, files, setFiles }: any) => {
 					const kmlLayer = new KMLLayer({
 						url: `https://${
 							process.env.NEXT_PUBLIC_S3_BUCKET_NAME
-						}.s3.amazonaws.com/${replaceSpacesWithPlus(
+						}.s3.amazonaws.com/${replaceSpacesWithPluses(
 							findFirstKmzFile(files).Key
 						)}`,
 					});
@@ -67,13 +64,13 @@ const MapComponent = ({ projectId, projectName, files, setFiles }: any) => {
 
 					kmlLayer.load().then(() => {
 						var extent = kmlLayer.fullExtent;
-
 						view.goTo(extent);
 					});
 				}
 			)
 			.catch((err) => {});
 	}, [updatedProjectName]);
+
 	const [selectedFile, setSelectedFile] = useState<File | undefined>(
 		undefined
 	);
@@ -168,7 +165,7 @@ const MapComponent = ({ projectId, projectName, files, setFiles }: any) => {
 			</div>
 			<div
 				id='viewDiv'
-				className='h-[450px] w-full rounded-b-lg'
+				className='h-[450px] w-full rounded-b-lg hover:cursor-grab'
 			/>
 		</div>
 	);

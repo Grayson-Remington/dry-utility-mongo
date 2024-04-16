@@ -3,9 +3,8 @@ import * as React from 'react';
 import Navbar from '@/components/navbar';
 import TimelineGrid from '@/components/timelineGrid';
 import ContactsGrid from '@/components/contactsGrid';
-import { Button, ButtonGroup, CircularProgress } from '@mui/material';
+import { CircularProgress } from '@mui/material';
 import TaskGrid from '@/components/taskGrid';
-
 import MapComponent from '@/components/MapComponent';
 import FilesGrid from '@/components/filesGrid';
 import { ListObjectsV2Command, S3Client, _Object } from '@aws-sdk/client-s3';
